@@ -1,0 +1,3 @@
+export const TREASURY_WALLET = "0x398a97A08C421D8748e15Fcf72F897b59d47Be22"
+export const DEPLOY_FEE_USD = 0.15
+export const VERIFY_FEE_USD = 0.30
