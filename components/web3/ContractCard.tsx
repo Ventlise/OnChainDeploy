@@ -14,7 +14,7 @@ interface ContractCardProps {
   description: string
   icon: LucideIcon
   accent: string
-  color: string
+  color?: string
   gradient: string
   glow: string
   border: string
@@ -31,7 +31,7 @@ export function ContractCard({
   description,
   icon: Icon,
   accent,
-  color,
+  color: _color,
   gradient,
   glow,
   border,
