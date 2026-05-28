@@ -38,7 +38,7 @@ export function ConnectWalletButton({
       <button
         type="button"
         onClick={onConnect}
-        className="gradient-bg flex w-full items-center justify-center gap-2 rounded-[10px] px-4 py-3.5 text-[14.5px] font-semibold text-white shadow-[0_4px_14px_rgba(124,90,245,0.3)] transition-all hover:-translate-y-px hover:shadow-[0_6px_20px_rgba(124,90,245,0.5)]"
+        className="gradient-bg flex w-full items-center justify-center gap-2 rounded-[10px] px-4 py-2.5 text-[14.5px] font-semibold text-white shadow-[0_4px_14px_rgba(124,90,245,0.3)] transition-all hover:-translate-y-px hover:shadow-[0_6px_20px_rgba(124,90,245,0.5)]"
       >
         <Wallet className="h-5 w-5" strokeWidth={2} />
         Connect Wallet

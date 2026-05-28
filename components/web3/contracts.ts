@@ -1,7 +1,7 @@
-import { Database, Sparkles, Plus, Vote } from "lucide-react"
+import { Database, Sparkles, Plus, Vote, Lock } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
-export type ContractAccent = "purple" | "blue" | "green" | "amber"
+export type ContractAccent = "purple" | "blue" | "green" | "amber" | "gradient"
 
 export interface ContractDef {
   id: string
@@ -13,6 +13,9 @@ export interface ContractDef {
   border: string
   gradient: string
   glow: string
+  comingSoon?: boolean
+  comingSoonLabel?: string
+  comingSoonExtra?: string
 }
 
 export const CONTRACTS: ContractDef[] = [
@@ -59,6 +62,20 @@ export const CONTRACTS: ContractDef[] = [
     border: "linear-gradient(90deg, #fbbf24, #fb923c)",
     gradient: "linear-gradient(135deg, #fbbf24, #fb923c)",
     glow: "rgba(251, 191, 36, 0.45)",
+  },
+  {
+    id: "coming-soon",
+    title: "More Templates",
+    description: "We're cooking up new one-click templates — ERC-20, NFT drops, multi-sig wallets and more.",
+    icon: Lock,
+    accent: "gradient",
+    color: "#7c5af5",
+    border: "linear-gradient(90deg, #7c5af5, #38bdf8)",
+    gradient: "linear-gradient(135deg, #7c5af5, #38bdf8)",
+    glow: "rgba(124, 90, 245, 0.35)",
+    comingSoon: true,
+    comingSoonLabel: "Coming Soon",
+    comingSoonExtra: "Join the waitlist to deploy first.",
   },
 ]
 
