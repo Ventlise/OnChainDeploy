@@ -3,38 +3,49 @@
 import { useEffect, useState } from "react"
 import { Fuel, Wifi, Box, Bitcoin } from "lucide-react"
 import { ConnectWalletButton } from "./ConnectWalletButton"
-
-interface WalletStatsSidebarProps {
-  deployed: number
-  verified: number
-  isConnected?: boolean
-  address?: string
-  balance?: number
-  onConnect?: () => void
-  onDisconnect?: () => void
-}
+import { useWallet } from "@/hooks/useWallet"
+import { useNetwork } from "@/hooks/useNetwork"
+import { useGasPrice } from "@/hooks/useGasPrice"
 
 export function WalletStatsSidebar({
   deployed,
   verified,
-  isConnected = false,
-  address = "",
-  balance = 0,
-  onConnect,
-  onDisconnect,
-}: WalletStatsSidebarProps) {
-  const [feed, setFeed] = useState({ gas: 0.012, eth: 3420.55, block: 18420715 })
+}: {
+  deployed: number
+  verified: number
+}) {
+  const { address, isConnected, isConnecting, connect, disconnect } = useWallet()
+  const { isCorrectNetwork } = useNetwork()
+  const { isLoading, gasPriceFormatted, ethPriceFormatted, refresh } = useGasPrice()
+  const [block, setBlock] = useState(24891342)
+  const [balance, setBalance] = useState(0)
 
+  // Block number ticker — visual only
   useEffect(() => {
     const t = setInterval(() => {
-      setFeed((f) => ({
-        gas: Math.max(0.005, f.gas + (Math.random() - 0.5) * 0.004),
-        eth: f.eth + (Math.random() - 0.5) * 4,
-        block: f.block + 1,
-      }))
+      setBlock((b) => b + 1)
     }, 2200)
     return () => clearInterval(t)
   }, [])
+
+  // Fetch real ETH balance when wallet connects
+  useEffect(() => {
+    if (!address || !isConnected) { setBalance(0); return }
+    const fetchBalance = async () => {
+      try {
+        const eth = (window as any).ethereum
+        if (!eth) return
+        const hex: string = await eth.request({
+          method: "eth_getBalance",
+          params: [address, "latest"],
+        })
+        const wei = BigInt(hex)
+        const ethVal = Number(wei) / 1e18
+        setBalance(ethVal)
+      } catch { setBalance(0) }
+    }
+    fetchBalance()
+  }, [address, isConnected])
 
   const verifyRate = deployed ? Math.round((verified / deployed) * 100) : 0
   const formatAddr = (a: string) => (a ? `${a.slice(0, 6)}…${a.slice(-4)}` : "—")
@@ -44,7 +55,6 @@ export function WalletStatsSidebar({
 
       {/* ── WALLET CARD ── */}
       <div className="glass relative overflow-hidden p-4">
-        {/* gradient border */}
         <div
           className="pointer-events-none absolute inset-0 rounded-2xl p-[1.5px] opacity-70"
           style={{
@@ -54,19 +64,17 @@ export function WalletStatsSidebar({
             maskComposite: "exclude",
           }}
         />
-        {/* glow */}
         <div
           className="pointer-events-none absolute -inset-0.5 -z-10 rounded-[18px] opacity-20 blur-2xl"
           style={{ background: "var(--grad)" }}
         />
 
-        {/* BASE MAINNET badge */}
+        {/* Network badge */}
         <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-emerald-300">
           <span className="pulse-green inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
-          BASE MAINNET
+          {isConnected && isCorrectNetwork ? "Base Mainnet ✓" : "Base Mainnet"}
         </span>
 
-        {/* title + subtitle */}
         <div className="mt-2.5 mb-3">
           <h3 className="text-[15px] font-bold leading-snug text-[var(--ink)]">
             {isConnected ? "Wallet connected" : "Connect your wallet"}
@@ -80,10 +88,11 @@ export function WalletStatsSidebar({
 
         <ConnectWalletButton
           isConnected={isConnected}
-          address={address}
+          isConnecting={isConnecting}
+          address={address ?? ""}
           balance={balance}
-          onConnect={onConnect}
-          onDisconnect={onDisconnect}
+          onConnect={connect}
+          onDisconnect={disconnect}
         />
       </div>
 
@@ -127,8 +136,9 @@ export function WalletStatsSidebar({
         </div>
 
         <div className="flex flex-col gap-1.5 border-t border-dashed border-white/[0.08] pt-3">
-          <Row label="Wallet" value={formatAddr(address)} />
+          <Row label="Wallet" value={formatAddr(address ?? "")} />
           <Row label="Network" value="Base · 8453" />
+          <Row label="Balance" value={isConnected ? `${balance.toFixed(4)} ETH` : "—"} />
         </div>
       </div>
 
@@ -138,16 +148,36 @@ export function WalletStatsSidebar({
           <span className="font-mono text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--ink-3)]">
             Network Feed
           </span>
-          <span className="inline-flex items-center gap-1.5 font-mono text-[10px] text-emerald-400">
+          <button
+            onClick={refresh}
+            className="inline-flex items-center gap-1.5 font-mono text-[10px] text-emerald-400 transition-colors hover:text-emerald-300"
+          >
             <span className="pulse-green inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
             LIVE
-          </span>
+          </button>
         </div>
         <div className="flex flex-col gap-2">
-          <FeedRow icon={<Fuel className="h-3.5 w-3.5" />} label="Gas price" value={`${feed.gas.toFixed(3)} gwei`} />
-          <FeedRow icon={<Bitcoin className="h-3.5 w-3.5" />} label="ETH price" value={`$${feed.eth.toFixed(2)}`} />
-          <FeedRow icon={<Wifi className="h-3.5 w-3.5" />} label="Network" value="BASE" valueClass="text-emerald-400" />
-          <FeedRow icon={<Box className="h-3.5 w-3.5" />} label="Block" value={`#${feed.block.toLocaleString()}`} />
+          <FeedRow
+            icon={<Fuel className="h-3.5 w-3.5" />}
+            label="Gas price"
+            value={isLoading ? "…" : gasPriceFormatted}
+          />
+          <FeedRow
+            icon={<Bitcoin className="h-3.5 w-3.5" />}
+            label="ETH price"
+            value={isLoading ? "…" : ethPriceFormatted}
+          />
+          <FeedRow
+            icon={<Wifi className="h-3.5 w-3.5" />}
+            label="Network"
+            value="BASE"
+            valueClass="text-emerald-400"
+          />
+          <FeedRow
+            icon={<Box className="h-3.5 w-3.5" />}
+            label="Block"
+            value={`#${block.toLocaleString()}`}
+          />
         </div>
       </div>
 

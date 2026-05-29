@@ -163,7 +163,7 @@ export async function deployContract(
       verified = result.status === "verified";
       verifyMessage = result.message;
     } catch {
-      verifyMessage = "Verification submission failed — you can retry on Sourcify.";
+      verifyMessage = "Auto-verification failed — you can verify manually at basescan.org/verifyContract";
     }
   }
 

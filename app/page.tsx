@@ -2,6 +2,7 @@
 
 export const dynamic = "force-dynamic"
 
+import { useState } from "react"
 import { Toaster } from "sonner"
 import { NetworkBanner } from "@/components/web3/NetworkBanner"
 import { ContractCard } from "@/components/web3/ContractCard"
@@ -9,6 +10,18 @@ import { WalletStatsSidebar } from "@/components/web3/WalletStatsSidebar"
 import { CONTRACTS } from "@/components/web3/contracts"
 
 export default function HomePage() {
+  const [deployed, setDeployed] = useState(0)
+  const [verified, setVerified] = useState(0)
+
+  const handleDeploy = async (_id: string) => {
+    setDeployed((n) => n + 1)
+  }
+
+  const handleDeployVerify = async (_id: string) => {
+    setDeployed((n) => n + 1)
+    setVerified((n) => n + 1)
+  }
+
   return (
     <main className="relative min-h-screen overflow-x-hidden bg-[var(--bg-2)] text-[var(--ink)]">
 
@@ -45,7 +58,6 @@ export default function HomePage() {
 
           {/* LEFT — hero + cards */}
           <section className="min-w-0">
-            {/* Hero */}
             <div className="mb-8">
               <h1 className="mb-3 text-[38px] font-extrabold leading-[1.05] tracking-tight sm:text-[48px]">
                 Ship a contract in{" "}
@@ -56,16 +68,23 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* Cards grid */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {CONTRACTS.map((c) => (
-                <ContractCard key={c.id} {...c} />
+                <ContractCard
+                  key={c.id}
+                  {...c}
+                  onDeploy={handleDeploy}
+                  onDeployVerify={handleDeployVerify}
+                />
               ))}
             </div>
           </section>
 
           {/* RIGHT — sidebar */}
-          <WalletStatsSidebar deployed={12} verified={9} />
+          <WalletStatsSidebar
+            deployed={deployed}
+            verified={verified}
+          />
 
         </div>
       </div>
