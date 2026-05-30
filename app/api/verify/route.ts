@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server"
 
-const BASESCAN_API = "https://api.basescan.org/api"
+const BASESCAN_API = "https://api.etherscan.io/v2/api?chainid=8453"
 
 interface VerifyRequest {
   contractAddress: string
@@ -27,9 +27,6 @@ function buildStandardJson(
   optimizationUsed: boolean,
   optimizationRuns: number,
 ): string {
-  // ⚠️ Do NOT include evmVersion here
-  // Let BaseScan use the compiler default for 0.8.17
-  // which is london — matches Remix "default" setting
   return JSON.stringify({
     language: "Solidity",
     sources: {
@@ -138,7 +135,7 @@ async function pollForResult(guid: string): Promise<{
         apikey: apiKey,
       })
 
-      const res = await fetch(`${BASESCAN_API}?${params.toString()}`)
+      const res = await fetch(`https://api.etherscan.io/v2/api?chainid=8453&${params.toString()}`)
       const data = await res.json()
       console.log(`[api/verify] Poll ${i + 1}/${MAX_ATTEMPTS} → ${data.result}`)
 
@@ -160,8 +157,6 @@ async function pollForResult(guid: string): Promise<{
         }
       }
 
-      // "Pending in queue" — keep polling
-
     } catch (e) {
       console.error(`[api/verify] Poll error ${i + 1}`, e)
     }
@@ -177,7 +172,6 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json() as VerifyRequest
 
-    // Validate fields
     if (
       !body.contractAddress ||
       !body.contractName ||
@@ -190,11 +184,10 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Wait 45 seconds for BaseScan to index the newly deployed contract
-    console.log("[api/verify] Waiting 45s for BaseScan indexing…")
-    await new Promise((r) => setTimeout(r, 45000))
+    // Wait 20 seconds for BaseScan to index the contract
+    console.log("[api/verify] Waiting 20s for BaseScan indexing…")
+    await new Promise((r) => setTimeout(r, 20000))
 
-    // Submit to BaseScan
     const submission = await submitToBaseScan(body)
 
     if (submission.alreadyVerified) {
@@ -212,7 +205,6 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // Poll for result
     const result = await pollForResult(submission.guid!)
 
     return NextResponse.json({
