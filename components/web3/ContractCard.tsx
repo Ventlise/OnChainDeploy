@@ -27,6 +27,22 @@ import {
   HELLO_BASE_DEPLOY_FEE_USD,
   HELLO_BASE_VERIFY_FEE_USD,
 } from "@/contracts/hello-base"
+import {
+  COUNTER_BYTECODE,
+  COUNTER_GAS_LIMIT,
+  COUNTER_SOURCE,
+  COUNTER_COMPILER,
+  COUNTER_DEPLOY_FEE_USD,
+  COUNTER_VERIFY_FEE_USD,
+} from "@/contracts/counter"
+import {
+  VOTING_BYTECODE,
+  VOTING_GAS_LIMIT,
+  VOTING_SOURCE,
+  VOTING_COMPILER,
+  VOTING_DEPLOY_FEE_USD,
+  VOTING_VERIFY_FEE_USD,
+} from "@/contracts/voting"
 
 // ── Contract registry ─────────────────────────────────────────────────
 interface ContractData {
@@ -61,8 +77,22 @@ const CONTRACT_REGISTRY: Record<string, ContractData> = {
     deployFeeUsd: HELLO_BASE_DEPLOY_FEE_USD,
     verifyFeeUsd: HELLO_BASE_VERIFY_FEE_USD,
   },
-  // "counter":    { ... },
-  // "voting":     { ... },
+  "counter": {
+    bytecode: COUNTER_BYTECODE,
+    gasLimit: COUNTER_GAS_LIMIT,
+    source: COUNTER_SOURCE,
+    compiler: COUNTER_COMPILER,
+    deployFeeUsd: COUNTER_DEPLOY_FEE_USD,
+    verifyFeeUsd: COUNTER_VERIFY_FEE_USD,
+  },
+  "voting": {
+    bytecode: VOTING_BYTECODE,
+    gasLimit: VOTING_GAS_LIMIT,
+    source: VOTING_SOURCE,
+    compiler: VOTING_COMPILER,
+    deployFeeUsd: VOTING_DEPLOY_FEE_USD,
+    verifyFeeUsd: VOTING_VERIFY_FEE_USD,
+  },
 }
 
 // ── Props ─────────────────────────────────────────────────────────────
@@ -144,7 +174,7 @@ export function ContractCard({
     const contractData = CONTRACT_REGISTRY[id]
 
     if (!contractData) {
-      setError(`${title} is coming soon. Only Simple Storage is live right now.`)
+      setError(`${title} deployment data is missing. Please contact support.`)
       setStep("error")
       return
     }

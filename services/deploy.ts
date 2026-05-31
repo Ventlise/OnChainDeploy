@@ -159,7 +159,6 @@ export async function deployContract(
       const result = await verifyContract({
         ...verifyParams,
         contractAddress: receipt.contractAddress,
-        evmVersion: "osaka",
       });
       verified = result.status === "verified";
       verifyMessage = result.message;
