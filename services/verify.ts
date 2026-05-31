@@ -11,6 +11,7 @@ export interface VerifyParams {
   compilerVersion: string
   optimizationUsed: boolean
   optimizationRuns: number
+  evmVersion?: string
 }
 
 export type VerifyStatus = "verified" | "pending" | "failed" | "error" | "no-key"

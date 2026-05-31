@@ -19,6 +19,14 @@ import {
   SIMPLE_STORAGE_DEPLOY_FEE_USD,
   SIMPLE_STORAGE_VERIFY_FEE_USD,
 } from "@/contracts/simple-storage"
+import {
+  HELLO_BASE_BYTECODE,
+  HELLO_BASE_GAS_LIMIT,
+  HELLO_BASE_SOURCE,
+  HELLO_BASE_COMPILER,
+  HELLO_BASE_DEPLOY_FEE_USD,
+  HELLO_BASE_VERIFY_FEE_USD,
+} from "@/contracts/hello-base"
 
 // ── Contract registry ─────────────────────────────────────────────────
 interface ContractData {
@@ -30,6 +38,7 @@ interface ContractData {
     version: string
     optimizationUsed: boolean
     optimizationRuns: number
+    evmVersion?: string
   }
   deployFeeUsd?: number
   verifyFeeUsd?: number
@@ -44,7 +53,14 @@ const CONTRACT_REGISTRY: Record<string, ContractData> = {
     deployFeeUsd: SIMPLE_STORAGE_DEPLOY_FEE_USD,
     verifyFeeUsd: SIMPLE_STORAGE_VERIFY_FEE_USD,
   },
-  // "hello-base": { ... },
+  "hello-base": {
+    bytecode: HELLO_BASE_BYTECODE,
+    gasLimit: HELLO_BASE_GAS_LIMIT,
+    source: HELLO_BASE_SOURCE,
+    compiler: HELLO_BASE_COMPILER,
+    deployFeeUsd: HELLO_BASE_DEPLOY_FEE_USD,
+    verifyFeeUsd: HELLO_BASE_VERIFY_FEE_USD,
+  },
   // "counter":    { ... },
   // "voting":     { ... },
 }
@@ -146,6 +162,7 @@ export function ContractCard({
               compilerVersion: contractData.compiler.version,
               optimizationUsed: contractData.compiler.optimizationUsed,
               optimizationRuns: contractData.compiler.optimizationRuns,
+              evmVersion: contractData.compiler.evmVersion ?? "london",
             }
           : undefined,
         (msg: string) => {

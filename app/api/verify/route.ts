@@ -1,7 +1,7 @@
 /**
  * app/api/verify/route.ts
- * Server-side BaseScan verification endpoint
- * BASESCAN_API_KEY lives here — never in the browser
+ * Server-side BaseScan verification
+ * Uses single-file format with normalized source + evmVersion support
  */
 
 import { NextRequest, NextResponse } from "next/server"
@@ -15,40 +15,11 @@ interface VerifyRequest {
   compilerVersion: string
   optimizationUsed: boolean
   optimizationRuns: number
+  evmVersion?: string
 }
 
 function getApiKey(): string {
   return process.env.BASESCAN_API_KEY ?? ""
-}
-
-function buildStandardJson(
-  contractName: string,
-  sourceCode: string,
-  optimizationUsed: boolean,
-  optimizationRuns: number,
-): string {
-  return JSON.stringify({
-    language: "Solidity",
-    sources: {
-      [`${contractName}.sol`]: { content: sourceCode },
-    },
-    settings: {
-      optimizer: {
-        enabled: optimizationUsed,
-        runs: optimizationRuns,
-      },
-      outputSelection: {
-        "*": {
-          "*": [
-            "abi",
-            "evm.bytecode",
-            "evm.deployedBytecode",
-            "metadata",
-          ],
-        },
-      },
-    },
-  })
 }
 
 async function submitToBaseScan(req: VerifyRequest): Promise<{
@@ -63,12 +34,16 @@ async function submitToBaseScan(req: VerifyRequest): Promise<{
     return { success: false, error: "BASESCAN_API_KEY not set on server." }
   }
 
-  const standardJson = buildStandardJson(
-    req.contractName,
-    req.sourceCode,
-    req.optimizationUsed,
-    req.optimizationRuns,
-  )
+  // Normalize line endings — Windows CRLF to Unix LF
+  const normalizedSource = req.sourceCode
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+    .trimEnd() + '\n'
+
+  // Normalize evmVersion — replace unsupported versions with london
+     const unsupportedVersions = ["osaka", "cancun", "shanghai"]
+     const rawEvm = req.evmVersion ?? "london"
+     const evmVersion = unsupportedVersions.includes(rawEvm) ? "london" : rawEvm
 
   console.log("[api/verify] Submitting to BaseScan", {
     address: req.contractAddress,
@@ -76,6 +51,9 @@ async function submitToBaseScan(req: VerifyRequest): Promise<{
     compiler: req.compilerVersion,
     optimization: req.optimizationUsed,
     runs: req.optimizationRuns,
+    evmVersion: evmVersion,
+    format: "solidity-single-file",
+    sourceLength: normalizedSource.length,
   })
 
   const body = new URLSearchParams({
@@ -83,10 +61,13 @@ async function submitToBaseScan(req: VerifyRequest): Promise<{
     action: "verifysourcecode",
     apikey: apiKey,
     contractaddress: req.contractAddress,
-    sourceCode: standardJson,
-    codeformat: "solidity-standard-json-input",
-    contractname: `${req.contractName}.sol:${req.contractName}`,
+    sourceCode: normalizedSource,
+    codeformat: "solidity-single-file",
+    contractname: req.contractName,
     compilerversion: req.compilerVersion,
+    optimizationUsed: req.optimizationUsed ? "1" : "0",
+    runs: req.optimizationRuns.toString(),
+    evmversion: evmVersion,
     licenseType: "3",
   })
 
@@ -135,7 +116,7 @@ async function pollForResult(guid: string): Promise<{
         apikey: apiKey,
       })
 
-      const res = await fetch(`https://api.etherscan.io/v2/api?chainid=8453&${params.toString()}`)
+      const res = await fetch(`${BASESCAN_API}&${params.toString()}`)
       const data = await res.json()
       console.log(`[api/verify] Poll ${i + 1}/${MAX_ATTEMPTS} → ${data.result}`)
 
@@ -184,7 +165,6 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Wait 20 seconds for BaseScan to index the contract
     console.log("[api/verify] Waiting 20s for BaseScan indexing…")
     await new Promise((r) => setTimeout(r, 20000))
 
