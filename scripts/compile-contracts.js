@@ -1,13 +1,8 @@
 // scripts/compile-contracts.js
-// Run with: node scripts/compile-contracts.js
-// This compiles Counter and Voting and prints their bytecode + ABI
-
 const solc = require("solc")
 
-// ─── CONTRACT SOURCES ────────────────────────────────────────────────────────
-
 const COUNTER_SOURCE = `// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.23;
 
 contract Counter {
     uint256 public count;
@@ -40,7 +35,7 @@ contract Counter {
 }`
 
 const VOTING_SOURCE = `// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.23;
 
 contract Voting {
     struct Proposal {
@@ -90,20 +85,40 @@ contract Voting {
     }
 }`
 
-// ─── COMPILE FUNCTION ────────────────────────────────────────────────────────
+const HELLO_BASE_SOURCE = `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.23;
+
+contract HelloBase {
+    string private message;
+    address public immutable deployer;
+    uint256 public immutable deployedAt;
+
+    event MessageUpdated(string newMessage, address updatedBy);
+
+    constructor() {
+        message = "Hello, Base!";
+        deployer = msg.sender;
+        deployedAt = block.timestamp;
+    }
+
+    function getMessage() public view returns (string memory) {
+        return message;
+    }
+
+    function setMessage(string calldata newMessage) public {
+        message = newMessage;
+        emit MessageUpdated(newMessage, msg.sender);
+    }
+}`
 
 function compile(contractName, source) {
   const input = {
     language: "Solidity",
-    sources: {
-      [`${contractName}.sol`]: { content: source },
-    },
+    sources: { [`${contractName}.sol`]: { content: source } },
     settings: {
       optimizer: { enabled: true, runs: 200 },
       evmVersion: "london",
-      outputSelection: {
-        "*": { "*": ["abi", "evm.bytecode.object"] },
-      },
+      outputSelection: { "*": { "*": ["abi", "evm.bytecode.object"] } },
     },
   }
 
@@ -112,7 +127,7 @@ function compile(contractName, source) {
   if (output.errors) {
     const errors = output.errors.filter((e) => e.severity === "error")
     if (errors.length > 0) {
-      console.error(`\n❌ Compile errors for ${contractName}:`)
+      console.error(`\n❌ Errors for ${contractName}:`)
       errors.forEach((e) => console.error(e.formattedMessage))
       process.exit(1)
     }
@@ -125,29 +140,23 @@ function compile(contractName, source) {
   }
 }
 
-// ─── COMPILE BOTH ────────────────────────────────────────────────────────────
+console.log("\n🔨 Compiling with solc", solc.version(), "\n")
 
-console.log("\n🔨 Compiling contracts with solc 0.8.x ...\n")
+const counter   = compile("Counter",   COUNTER_SOURCE)
+const voting    = compile("Voting",    VOTING_SOURCE)
+const helloBase = compile("HelloBase", HELLO_BASE_SOURCE)
 
-const counter = compile("Counter", COUNTER_SOURCE)
-const voting  = compile("Voting",  VOTING_SOURCE)
+console.log("═══════════════════════════════════════")
+console.log("✅ COUNTER BYTECODE:")
+console.log(counter.bytecode)
 
-// ─── PRINT RESULTS ───────────────────────────────────────────────────────────
+console.log("\n═══════════════════════════════════════")
+console.log("✅ VOTING BYTECODE:")
+console.log(voting.bytecode)
 
-console.log("═══════════════════════════════════════════════════════")
-console.log("✅  COUNTER — Copy these values into contracts/counter.ts")
-console.log("═══════════════════════════════════════════════════════")
-console.log("\nexport const COUNTER_BYTECODE =")
-console.log(`  "${counter.bytecode}"`)
-console.log("\nexport const COUNTER_ABI =")
-console.log(JSON.stringify(counter.abi, null, 2))
+console.log("\n═══════════════════════════════════════")
+console.log("✅ HELLO BASE BYTECODE:")
+console.log(helloBase.bytecode)
 
-console.log("\n═══════════════════════════════════════════════════════")
-console.log("✅  VOTING — Copy these values into contracts/voting.ts")
-console.log("═══════════════════════════════════════════════════════")
-console.log("\nexport const VOTING_BYTECODE =")
-console.log(`  "${voting.bytecode}"`)
-console.log("\nexport const VOTING_ABI =")
-console.log(JSON.stringify(voting.abi, null, 2))
-
-console.log("\n✅ Done! Copy the BYTECODE and ABI values above into your contract files.\n")
+console.log("\n✅ Done! solc version:", solc.version())
+console.log("Use version string: v" + solc.version().split("+commit")[0] + "+commit" + solc.version().split("+commit")[1].split(".")[0])

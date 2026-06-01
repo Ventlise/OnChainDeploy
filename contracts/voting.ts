@@ -169,7 +169,7 @@ contract Voting {
 // ─── COMPILER SETTINGS ───────────────────────────────────────────────────────
 export const VOTING_COMPILER = {
   name: "Voting",
-  version: "v0.8.23+commit.f704f362",
+  version: "v0.8.35+commit.47b9dedd",
   optimizationUsed: true,
   optimizationRuns: 200,
   evmVersion: "london",
