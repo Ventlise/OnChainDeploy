@@ -15,6 +15,7 @@ interface DeploymentModalProps {
   gradient: string
   glow: string
   mode: DeployMode
+  platformFeeUsd: number
   isDeploying: boolean
   txStatusSlot?: ReactNode
   onConfirm: () => void
@@ -31,6 +32,7 @@ export function DeploymentModal({
   gradient,
   glow,
   mode,
+  platformFeeUsd,
   isDeploying,
   txStatusSlot,
   onConfirm,
@@ -89,7 +91,11 @@ export function DeploymentModal({
 
         {/* Fee section */}
         <div className="border-b border-white/[0.08] px-6 py-4.5">
-          <FeeBreakdown contractId={contractId} mode={mode} />
+          <FeeBreakdown
+            contractId={contractId}
+            mode={mode}
+            platformFeeUsd={platformFeeUsd}
+          />
         </div>
 
         {/* What happens next */}
@@ -101,11 +107,9 @@ export function DeploymentModal({
             {[
               <>Your wallet pops up to <b className="text-[var(--ink)]">sign one transaction</b>. No approvals needed.</>,
               <>We broadcast to <b className="text-[var(--ink)]">Base Mainnet</b> and watch for confirmation (~2s).</>,
-              isVerify ? (
-                <>Source code is <b className="text-[var(--ink)]">verified on Basescan</b> automatically.</>
-              ) : (
-                <>You get a contract address and a Basescan link.</>
-              ),
+              isVerify
+                ? <>Source code is <b className="text-[var(--ink)]">verified on Basescan</b> automatically.</>
+                : <>You get a contract address and a Basescan link.</>,
             ].map((text, i) => (
               <li key={i} className="flex items-start gap-3">
                 <span className="grid h-[22px] w-[22px] flex-shrink-0 place-items-center rounded-md border border-purple-400/30 bg-purple-400/15 font-mono text-[11px] font-bold text-purple-300">
@@ -122,7 +126,7 @@ export function DeploymentModal({
           <div className="border-b border-white/[0.08] px-6 py-4.5">{txStatusSlot}</div>
         )}
 
-        {/* Footer */}
+        {/* Footer buttons */}
         <div className="flex gap-2.5 px-6 pb-5 pt-4">
           <button
             type="button"
@@ -138,7 +142,7 @@ export function DeploymentModal({
             disabled={isDeploying}
             className="gradient-bg flex-1 rounded-[10px] py-2.5 text-[13px] font-semibold text-white shadow-[0_4px_14px_rgba(124,90,245,0.3)] transition-all hover:-translate-y-px hover:shadow-[0_6px_20px_rgba(124,90,245,0.5)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
           >
-            {isDeploying ? "Deploying…" : "Sign & Deploy"}
+            {isDeploying ? "Deploying…" : isVerify ? "Sign & Deploy + Verify" : "Sign & Deploy"}
           </button>
         </div>
       </div>

@@ -2,25 +2,18 @@
 
 export const dynamic = "force-dynamic"
 
-import { useState } from "react"
 import { Toaster } from "sonner"
 import { NetworkBanner } from "@/components/web3/NetworkBanner"
 import { ContractCard } from "@/components/web3/ContractCard"
 import { WalletStatsSidebar } from "@/components/web3/WalletStatsSidebar"
 import { CONTRACTS } from "@/components/web3/contracts"
+import { useDeploymentStats } from "@/hooks/useDeploymentStats"
+import { useWallet } from "@/hooks/useWallet"
 
 export default function HomePage() {
-  const [deployed, setDeployed] = useState(0)
-  const [verified, setVerified] = useState(0)
-
-  const handleDeploy = async (_id: string) => {
-    setDeployed((n) => n + 1)
-  }
-
-  const handleDeployVerify = async (_id: string) => {
-    setDeployed((n) => n + 1)
-    setVerified((n) => n + 1)
-  }
+  const { address } = useWallet()
+  const { deployed, verified, recordDeploy, recordDeployVerify } =
+    useDeploymentStats(address ?? undefined)
 
   return (
     <main className="relative min-h-screen overflow-x-hidden bg-[var(--bg-2)] text-[var(--ink)]">
@@ -73,8 +66,8 @@ export default function HomePage() {
                 <ContractCard
                   key={c.id}
                   {...c}
-                  onDeploy={handleDeploy}
-                  onDeployVerify={handleDeployVerify}
+                  onDeploy={recordDeploy}
+                  onDeployVerify={recordDeployVerify}
                 />
               ))}
             </div>

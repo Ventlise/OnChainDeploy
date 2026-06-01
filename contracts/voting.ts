@@ -176,5 +176,5 @@ export const VOTING_COMPILER = {
 }
 
 // ─── FEE CONSTANTS ───────────────────────────────────────────────────────────
-export const VOTING_DEPLOY_FEE_USD = 0.15
-export const VOTING_VERIFY_FEE_USD = 0.30
+export const VOTING_DEPLOY_FEE_USD = 0.25
+export const VOTING_VERIFY_FEE_USD = 0.35

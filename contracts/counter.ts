@@ -135,4 +135,4 @@ export const COUNTER_COMPILER = {
 
 // ─── FEE CONSTANTS ───────────────────────────────────────────────────────────
 export const COUNTER_DEPLOY_FEE_USD = 0.15
-export const COUNTER_VERIFY_FEE_USD = 0.30
+export const COUNTER_VERIFY_FEE_USD = 0.25

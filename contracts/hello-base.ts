@@ -90,5 +90,5 @@ export const HELLO_BASE_COMPILER = {
   evmVersion: "london",
 }
 
-export const HELLO_BASE_DEPLOY_FEE_USD = 0.15
-export const HELLO_BASE_VERIFY_FEE_USD = 0.30
+export const HELLO_BASE_DEPLOY_FEE_USD = 0.10
+export const HELLO_BASE_VERIFY_FEE_USD = 0.15

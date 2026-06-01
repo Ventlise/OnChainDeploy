@@ -36,24 +36,14 @@ async function submitToBaseScan(req: VerifyRequest): Promise<{
 
   // Normalize line endings — Windows CRLF to Unix LF
   const normalizedSource = req.sourceCode
-    .replace(/\r\n/g, '\n')
-    .replace(/\r/g, '\n')
-    + '\n'
-
-  // Debug — log exact source details
-  console.log("[api/verify] Source debug", {
-    firstChars: normalizedSource.slice(0, 50),
-    lastChars: normalizedSource.slice(-50),
-    length: normalizedSource.length,
-    firstCharCode: normalizedSource.charCodeAt(0),
-    lastCharCode: normalizedSource.charCodeAt(normalizedSource.length - 1),
-    hasTrailingNewline: normalizedSource.endsWith('\n'),
-  })
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    + "\n"
 
   // Normalize evmVersion — replace unsupported versions with london
-const unsupportedVersions = ["osaka", "cancun", "shanghai"]
-const rawEvm = req.evmVersion ?? "london"
-const evmVersion = unsupportedVersions.includes(rawEvm) ? "london" : rawEvm
+  const unsupportedVersions = ["osaka", "cancun", "shanghai"]
+  const rawEvm = req.evmVersion ?? "london"
+  const evmVersion = unsupportedVersions.includes(rawEvm) ? "london" : rawEvm
 
   console.log("[api/verify] Submitting to BaseScan", {
     address: req.contractAddress,
@@ -61,8 +51,7 @@ const evmVersion = unsupportedVersions.includes(rawEvm) ? "london" : rawEvm
     compiler: req.compilerVersion,
     optimization: req.optimizationUsed,
     runs: req.optimizationRuns,
-    evmVersion: evmVersion,
-    format: "solidity-single-file",
+    evmVersion,
     sourceLength: normalizedSource.length,
   })
 
@@ -88,7 +77,7 @@ const evmVersion = unsupportedVersions.includes(rawEvm) ? "london" : rawEvm
   })
 
   const data = await res.json()
-  console.log("[api/verify] BaseScan submission response →", data)
+  console.log("[api/verify] BaseScan response →", data)
 
   if (
     data.result?.includes("Already Verified") ||
@@ -175,9 +164,8 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // Wait for BaseScan to index the newly deployed contract
     console.log("[api/verify] Waiting 20s for BaseScan indexing…")
-    console.log("[api/verify] Full source preview (first 200 chars):", body.sourceCode?.slice(0, 200))
-    console.log("[api/verify] evmVersion received:", body.evmVersion)
     await new Promise((r) => setTimeout(r, 20000))
 
     const submission = await submitToBaseScan(body)

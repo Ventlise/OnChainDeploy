@@ -82,5 +82,5 @@ export const SIMPLE_STORAGE_COMPILER = {
   optimizationRuns: 200,
 }
 
-export const SIMPLE_STORAGE_DEPLOY_FEE_USD = 0.15
-export const SIMPLE_STORAGE_VERIFY_FEE_USD = 0.30
+export const SIMPLE_STORAGE_DEPLOY_FEE_USD = 0.05
+export const SIMPLE_STORAGE_VERIFY_FEE_USD = 0.10
