@@ -216,7 +216,10 @@ Base Chain Config:
 - No any types unless absolutely necessary
 
 Required .env variables:
-NEXT_PUBLIC_BASESCAN_API_KEY=
+# ── Server-only (never exposed to browser) ──
+BASESCAN_API_KEY=                                                  # 🔒 SECRET — never NEXT_PUBLIC_
+
+# ── Public (bundled into client JS — safe to expose) ──
 NEXT_PUBLIC_TREASURY_WALLET=0x398a97A08C421D8748e15Fcf72F897b59d47Be22
 NEXT_PUBLIC_CHAIN_ID=8453
 NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=

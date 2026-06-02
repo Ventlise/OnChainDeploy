@@ -1,10 +1,11 @@
 /**
  * app/api/verify/route.ts
- * Server-side BaseScan verification
- * Uses single-file format with normalized source + evmVersion support
+ * Server-side BaseScan verification with per-wallet + per-IP rate limits.
  */
 
 import { NextRequest, NextResponse } from "next/server"
+import { checkVerifyRateLimit, getClientIp } from "@/lib/rate-limit"
+import { validateVerifyPayload } from "@/lib/validation"
 
 const BASESCAN_API = "https://api.etherscan.io/v2/api?chainid=8453"
 
@@ -34,13 +35,11 @@ async function submitToBaseScan(req: VerifyRequest): Promise<{
     return { success: false, error: "BASESCAN_API_KEY not set on server." }
   }
 
-  // Normalize line endings — Windows CRLF to Unix LF
   const normalizedSource = req.sourceCode
     .replace(/\r\n/g, "\n")
     .replace(/\r/g, "\n")
     + "\n"
 
-  // Normalize evmVersion — replace unsupported versions with london
   const unsupportedVersions = ["osaka", "cancun", "shanghai"]
   const rawEvm = req.evmVersion ?? "london"
   const evmVersion = unsupportedVersions.includes(rawEvm) ? "london" : rawEvm
@@ -136,7 +135,6 @@ async function pollForResult(guid: string): Promise<{
           message: `Verification failed: ${data.result}`,
         }
       }
-
     } catch (e) {
       console.error(`[api/verify] Poll error ${i + 1}`, e)
     }
@@ -150,21 +148,46 @@ async function pollForResult(guid: string): Promise<{
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json() as VerifyRequest
-
-    if (
-      !body.contractAddress ||
-      !body.contractName ||
-      !body.sourceCode ||
-      !body.compilerVersion
-    ) {
+    // ── 1. Parse + validate body FIRST so we know the wallet address ──
+    let rawBody: unknown
+    try {
+      rawBody = await req.json()
+    } catch {
       return NextResponse.json(
-        { status: "error", message: "Missing required fields." },
+        { status: "error", message: "Invalid JSON in request body." },
         { status: 400 },
       )
     }
 
-    // Wait for BaseScan to index the newly deployed contract
+    const validation = validateVerifyPayload(rawBody)
+    if (!validation.ok) {
+      console.warn(`[api/verify] Validation failed: ${validation.error}`)
+      return NextResponse.json(
+        { status: "error", message: validation.error },
+        { status: 400 },
+      )
+    }
+
+    const body = validation.data
+
+    // ── 2. Rate limit by WALLET (primary) + IP (backstop) ─────────────
+    const ip = getClientIp(req.headers)
+    const limit = checkVerifyRateLimit(body.contractAddress, ip)
+
+    if (!limit.allowed) {
+      console.warn(
+        `[api/verify] Rate limit hit — reason=${limit.reason} ip=${ip} wallet=${body.contractAddress}`,
+      )
+      return NextResponse.json(
+        { status: "error", message: limit.message },
+        {
+          status: 429,
+          headers: { "Retry-After": String(limit.resetInSec ?? 3600) },
+        },
+      )
+    }
+
+    // ── 3. Wait for BaseScan indexing, then submit ────────────────────
     console.log("[api/verify] Waiting 20s for BaseScan indexing…")
     await new Promise((r) => setTimeout(r, 20000))
 
@@ -185,6 +208,7 @@ export async function POST(req: NextRequest) {
       })
     }
 
+    // ── 4. Poll for verification result ───────────────────────────────
     const result = await pollForResult(submission.guid!)
 
     return NextResponse.json({
@@ -195,7 +219,6 @@ export async function POST(req: NextRequest) {
           ? `https://basescan.org/address/${body.contractAddress}#code`
           : undefined,
     })
-
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Server error."
     console.error("[api/verify] Exception →", message)

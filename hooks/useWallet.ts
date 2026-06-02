@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react"
 import {
   connectWallet,
   disconnectWallet,
@@ -7,18 +7,18 @@ import {
   isWalletInstalled,
   shortenAddress,
   type WalletState,
-} from "@/services/wallet";
+} from "@/services/wallet"
 
 export interface UseWalletReturn {
-  address: string | null;
-  chainId: number | null;
-  isConnected: boolean;
-  isConnecting: boolean;
-  isInstalled: boolean;
-  shortAddress: string;
-  error: string | null;
-  connect: () => Promise<void>;
-  disconnect: () => void;
+  address: string | null
+  chainId: number | null
+  isConnected: boolean
+  isConnecting: boolean
+  isInstalled: boolean
+  shortAddress: string
+  error: string | null
+  connect: () => Promise<void>
+  disconnect: () => Promise<void>
 }
 
 export function useWallet(): UseWalletReturn {
@@ -26,58 +26,64 @@ export function useWallet(): UseWalletReturn {
     address: null,
     chainId: null,
     isConnected: false,
-  });
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [isInstalled, setIsInstalled] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  })
+  const [isConnecting, setIsConnecting] = useState(false)
+  const [isInstalled, setIsInstalled] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   // On mount: check if already connected + detect wallet install
   useEffect(() => {
-    setIsInstalled(isWalletInstalled());
+    setIsInstalled(isWalletInstalled())
 
     getWalletState().then((walletState) => {
-      setState(walletState);
-    });
+      setState(walletState)
+    })
 
     // Listen for account / chain switches
     const unsubscribe = subscribeToWalletEvents(
       (accounts) => {
         if (accounts.length === 0) {
-          setState({ address: null, chainId: null, isConnected: false });
+          setState({ address: null, chainId: null, isConnected: false })
         } else {
           setState((prev) => ({
             ...prev,
             address: accounts[0],
             isConnected: true,
-          }));
+          }))
         }
       },
       (chainId) => {
-        setState((prev) => ({ ...prev, chainId }));
+        setState((prev) => ({ ...prev, chainId }))
       },
-    );
+    )
 
-    return () => unsubscribe();
-  }, []);
+    return () => unsubscribe()
+  }, [])
 
   const connect = useCallback(async () => {
-    setIsConnecting(true);
-    setError(null);
+    setIsConnecting(true)
+    setError(null)
     try {
-      const walletState = await connectWallet();
-      setState(walletState);
+      const walletState = await connectWallet()
+      setState(walletState)
     } catch (err: unknown) {
       const message =
-        err instanceof Error ? err.message : "Failed to connect wallet.";
-      setError(message);
+        err instanceof Error ? err.message : "Failed to connect wallet."
+      setError(message)
     } finally {
-      setIsConnecting(false);
+      setIsConnecting(false)
     }
-  }, []);
+  }, [])
 
-  const disconnect = useCallback(() => {
-    setState(disconnectWallet());
-  }, []);
+  const disconnect = useCallback(async () => {
+    try {
+      const cleared = await disconnectWallet()
+      setState(cleared)
+    } catch {
+      // Even if revoke fails, clear local state so UI updates.
+      setState({ address: null, chainId: null, isConnected: false })
+    }
+  }, [])
 
   return {
     address: state.address,
@@ -89,5 +95,5 @@ export function useWallet(): UseWalletReturn {
     error,
     connect,
     disconnect,
-  };
+  }
 }
