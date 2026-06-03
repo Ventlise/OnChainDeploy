@@ -1,6 +1,5 @@
 /**
  * app/api/verify/route.ts
- * Server-side BaseScan verification with per-wallet + per-IP rate limits.
  */
 
 import { NextRequest, NextResponse } from "next/server"
@@ -17,6 +16,7 @@ interface VerifyRequest {
   optimizationUsed: boolean
   optimizationRuns: number
   evmVersion?: string
+  constructorArguments?: string
 }
 
 function getApiKey(): string {
@@ -30,7 +30,6 @@ async function submitToBaseScan(req: VerifyRequest): Promise<{
   error?: string
 }> {
   const apiKey = getApiKey()
-
   if (!apiKey) {
     return { success: false, error: "BASESCAN_API_KEY not set on server." }
   }
@@ -48,13 +47,12 @@ async function submitToBaseScan(req: VerifyRequest): Promise<{
     address: req.contractAddress,
     name: req.contractName,
     compiler: req.compilerVersion,
-    optimization: req.optimizationUsed,
-    runs: req.optimizationRuns,
     evmVersion,
+    hasConstructorArgs: !!req.constructorArguments,
     sourceLength: normalizedSource.length,
   })
 
-  const body = new URLSearchParams({
+  const bodyParams: Record<string, string> = {
     module: "contract",
     action: "verifysourcecode",
     apikey: apiKey,
@@ -67,7 +65,14 @@ async function submitToBaseScan(req: VerifyRequest): Promise<{
     runs: req.optimizationRuns.toString(),
     evmversion: evmVersion,
     licenseType: "3",
-  })
+  }
+
+  // Include constructor arguments if present
+  if (req.constructorArguments) {
+    bodyParams.constructorArguments = req.constructorArguments
+  }
+
+  const body = new URLSearchParams(bodyParams)
 
   const res = await fetch(BASESCAN_API, {
     method: "POST",
@@ -86,10 +91,7 @@ async function submitToBaseScan(req: VerifyRequest): Promise<{
   }
 
   if (data.status !== "1") {
-    return {
-      success: false,
-      error: data.result ?? "BaseScan submission failed.",
-    }
+    return { success: false, error: data.result ?? "BaseScan submission failed." }
   }
 
   return { success: true, guid: data.result }
@@ -105,7 +107,6 @@ async function pollForResult(guid: string): Promise<{
 
   for (let i = 0; i < MAX_ATTEMPTS; i++) {
     await new Promise((r) => setTimeout(r, POLL_INTERVAL))
-
     try {
       const params = new URLSearchParams({
         module: "contract",
@@ -113,7 +114,6 @@ async function pollForResult(guid: string): Promise<{
         guid,
         apikey: apiKey,
       })
-
       const res = await fetch(`${BASESCAN_API}&${params.toString()}`)
       const data = await res.json()
       console.log(`[api/verify] Poll ${i + 1}/${MAX_ATTEMPTS} → ${data.result}`)
@@ -121,34 +121,21 @@ async function pollForResult(guid: string): Promise<{
       if (data.result === "Pass - Verified") {
         return { status: "verified", message: "Contract verified on BaseScan." }
       }
-
       if (data.result?.includes("Already Verified")) {
         return { status: "verified", message: "Already verified on BaseScan." }
       }
-
-      if (
-        data.result?.includes("Fail") ||
-        data.result?.includes("Unable to verify")
-      ) {
-        return {
-          status: "failed",
-          message: `Verification failed: ${data.result}`,
-        }
+      if (data.result?.includes("Fail") || data.result?.includes("Unable to verify")) {
+        return { status: "failed", message: `Verification failed: ${data.result}` }
       }
     } catch (e) {
       console.error(`[api/verify] Poll error ${i + 1}`, e)
     }
   }
-
-  return {
-    status: "pending",
-    message: "Verification submitted. Check BaseScan in a few minutes.",
-  }
+  return { status: "pending", message: "Verification submitted. Check BaseScan in a few minutes." }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    // ── 1. Parse + validate body FIRST so we know the wallet address ──
     let rawBody: unknown
     try {
       rawBody = await req.json()
@@ -170,24 +157,15 @@ export async function POST(req: NextRequest) {
 
     const body = validation.data
 
-    // ── 2. Rate limit by WALLET (primary) + IP (backstop) ─────────────
     const ip = getClientIp(req.headers)
     const limit = checkVerifyRateLimit(body.contractAddress, ip)
-
     if (!limit.allowed) {
-      console.warn(
-        `[api/verify] Rate limit hit — reason=${limit.reason} ip=${ip} wallet=${body.contractAddress}`,
-      )
       return NextResponse.json(
         { status: "error", message: limit.message },
-        {
-          status: 429,
-          headers: { "Retry-After": String(limit.resetInSec ?? 3600) },
-        },
+        { status: 429, headers: { "Retry-After": String(limit.resetInSec ?? 3600) } },
       )
     }
 
-    // ── 3. Wait for BaseScan indexing, then submit ────────────────────
     console.log("[api/verify] Waiting 20s for BaseScan indexing…")
     await new Promise((r) => setTimeout(r, 20000))
 
@@ -208,7 +186,6 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // ── 4. Poll for verification result ───────────────────────────────
     const result = await pollForResult(submission.guid!)
 
     return NextResponse.json({
@@ -222,9 +199,6 @@ export async function POST(req: NextRequest) {
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Server error."
     console.error("[api/verify] Exception →", message)
-    return NextResponse.json(
-      { status: "error", message },
-      { status: 500 },
-    )
+    return NextResponse.json({ status: "error", message }, { status: 500 })
   }
 }

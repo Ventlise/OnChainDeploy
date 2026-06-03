@@ -1,18 +1,72 @@
 // scripts/compile-contracts.js
 const solc = require("solc")
 
+const SIMPLE_STORAGE_SOURCE = `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.23;
+
+contract SimpleStorage {
+    uint256 private storedData;
+    string public name;
+    address public immutable deployer;
+    uint256 public immutable deployedAt;
+
+    constructor(string memory _name) {
+        name = _name;
+        deployer = msg.sender;
+        deployedAt = block.timestamp;
+    }
+
+    function set(uint256 x) public {
+        storedData = x;
+    }
+
+    function get() public view returns (uint256) {
+        return storedData;
+    }
+}`
+
+const HELLO_BASE_SOURCE = `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.23;
+
+contract HelloBase {
+    string private message;
+    string public name;
+    address public immutable deployer;
+    uint256 public immutable deployedAt;
+
+    event MessageUpdated(string newMessage, address updatedBy);
+
+    constructor(string memory _name) {
+        name = _name;
+        message = "Hello, Base!";
+        deployer = msg.sender;
+        deployedAt = block.timestamp;
+    }
+
+    function getMessage() public view returns (string memory) {
+        return message;
+    }
+
+    function setMessage(string calldata newMessage) public {
+        message = newMessage;
+        emit MessageUpdated(newMessage, msg.sender);
+    }
+}`
+
 const COUNTER_SOURCE = `// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
 contract Counter {
     uint256 public count;
+    string public name;
     address public immutable deployer;
     uint256 public immutable deployedAt;
 
     event CounterChanged(uint256 newValue, address changedBy);
 
-    constructor() {
-        deployer   = msg.sender;
+    constructor(string memory _name) {
+        name = _name;
+        deployer = msg.sender;
         deployedAt = block.timestamp;
     }
 
@@ -43,6 +97,7 @@ contract Voting {
         uint256 voteCount;
     }
 
+    string public name;
     address public immutable deployer;
     uint256 public immutable deployedAt;
 
@@ -54,8 +109,9 @@ contract Voting {
     event ProposalCreated(uint256 indexed proposalId, string description);
     event VoteCast(uint256 indexed proposalId, address indexed voter);
 
-    constructor() {
-        deployer   = msg.sender;
+    constructor(string memory _name) {
+        name = _name;
+        deployer = msg.sender;
         deployedAt = block.timestamp;
     }
 
@@ -82,32 +138,6 @@ contract Voting {
     function getProposal(uint256 proposalId) public view returns (string memory) {
         require(proposalId < proposalCount, "Voting: invalid proposal");
         return proposals[proposalId].description;
-    }
-}`
-
-const HELLO_BASE_SOURCE = `// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.23;
-
-contract HelloBase {
-    string private message;
-    address public immutable deployer;
-    uint256 public immutable deployedAt;
-
-    event MessageUpdated(string newMessage, address updatedBy);
-
-    constructor() {
-        message = "Hello, Base!";
-        deployer = msg.sender;
-        deployedAt = block.timestamp;
-    }
-
-    function getMessage() public view returns (string memory) {
-        return message;
-    }
-
-    function setMessage(string calldata newMessage) public {
-        message = newMessage;
-        emit MessageUpdated(newMessage, msg.sender);
     }
 }`
 
@@ -140,13 +170,22 @@ function compile(contractName, source) {
   }
 }
 
-console.log("\n🔨 Compiling with solc", solc.version(), "\n")
+console.log("\n🔨 Compiling all 4 contracts with solc", solc.version(), "\n")
 
-const counter   = compile("Counter",   COUNTER_SOURCE)
-const voting    = compile("Voting",    VOTING_SOURCE)
-const helloBase = compile("HelloBase", HELLO_BASE_SOURCE)
+const simpleStorage = compile("SimpleStorage", SIMPLE_STORAGE_SOURCE)
+const helloBase     = compile("HelloBase",     HELLO_BASE_SOURCE)
+const counter       = compile("Counter",       COUNTER_SOURCE)
+const voting        = compile("Voting",        VOTING_SOURCE)
 
 console.log("═══════════════════════════════════════")
+console.log("✅ SIMPLE STORAGE BYTECODE:")
+console.log(simpleStorage.bytecode)
+
+console.log("\n═══════════════════════════════════════")
+console.log("✅ HELLO BASE BYTECODE:")
+console.log(helloBase.bytecode)
+
+console.log("\n═══════════════════════════════════════")
 console.log("✅ COUNTER BYTECODE:")
 console.log(counter.bytecode)
 
@@ -154,9 +193,8 @@ console.log("\n═════════════════════�
 console.log("✅ VOTING BYTECODE:")
 console.log(voting.bytecode)
 
-console.log("\n═══════════════════════════════════════")
-console.log("✅ HELLO BASE BYTECODE:")
-console.log(helloBase.bytecode)
-
-console.log("\n✅ Done! solc version:", solc.version())
-console.log("Use version string: v" + solc.version().split("+commit")[0] + "+commit" + solc.version().split("+commit")[1].split(".")[0])
+const version = solc.version()
+const versionString = "v" + version.replace(".Emscripten.clang", "")
+console.log("\n✅ Done!")
+console.log("Version string for all contract files:", versionString)
+console.log("\n⚠️  Update COMPILER version in ALL 4 contract .ts files to:", versionString)

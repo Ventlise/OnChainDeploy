@@ -5,6 +5,7 @@ import { Rocket, ShieldCheck, Lock } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { toast } from "sonner"
 import { DeploymentModal } from "./DeploymentModal"
+import { NamePromptModal } from "./NamePromptModal"
 import { TxStatus, type TxStep } from "./TxStatus"
 import { DEPLOY_FEE_USD, VERIFY_FEE_USD } from "@/constants/treasury"
 import type { DeployMode } from "./FeeBreakdown"
@@ -44,7 +45,6 @@ import {
   VOTING_VERIFY_FEE_USD,
 } from "@/contracts/voting"
 
-// ── Contract registry ─────────────────────────────────────────────────
 interface ContractData {
   bytecode: string
   gasLimit: number
@@ -95,7 +95,6 @@ const CONTRACT_REGISTRY: Record<string, ContractData> = {
   },
 }
 
-// ── Props ─────────────────────────────────────────────────────────────
 interface ContractCardProps {
   id: string
   title: string
@@ -131,7 +130,16 @@ export function ContractCard({
   const { address, isConnected } = useWallet()
   const { isCorrectNetwork } = useNetwork()
 
-  const [isOpen, setIsOpen] = useState(false)
+  // ── Fees defined first so confirm() can use them ──────────────────
+  const deployFee = CONTRACT_REGISTRY[id]?.deployFeeUsd ?? DEPLOY_FEE_USD
+  const verifyFee = CONTRACT_REGISTRY[id]?.verifyFeeUsd ?? VERIFY_FEE_USD
+
+  // ── Modal state ───────────────────────────────────────────────────
+  const [showNamePrompt, setShowNamePrompt] = useState(false)
+  const [isDeployModalOpen, setIsDeployModalOpen] = useState(false)
+  const [pendingMode, setPendingMode] = useState<DeployMode>("deploy")
+  const [contractName, setContractName] = useState("")
+
   const [mode, setMode] = useState<DeployMode>("deploy")
   const [step, setStep] = useState<TxStep>("idle")
   const [statusMessage, setStatusMessage] = useState("")
@@ -139,11 +147,8 @@ export function ContractCard({
   const [contractAddress, setContractAddress] = useState<string>()
   const [error, setError] = useState<string>()
 
-  // ── Fees defined BEFORE confirm so they are in scope ─────────────
-  const deployFee = CONTRACT_REGISTRY[id]?.deployFeeUsd ?? DEPLOY_FEE_USD
-  const verifyFee = CONTRACT_REGISTRY[id]?.verifyFeeUsd ?? VERIFY_FEE_USD
-
-  const openModal = (m: DeployMode) => {
+  // ── Step 1: validate + show name prompt ──────────────────────────
+  const openNamePrompt = (m: DeployMode) => {
     if (comingSoon) return
     if (!isConnected || !address) {
       toast.error("Please connect your wallet first.")
@@ -153,21 +158,29 @@ export function ContractCard({
       toast.error("Please switch to Base Mainnet first.")
       return
     }
-    setMode(m)
+    setPendingMode(m)
+    setShowNamePrompt(true)
+  }
+
+  // ── Step 2: user confirmed name → open deploy modal ──────────────
+  const handleNameConfirmed = (name: string) => {
+    setContractName(name)
+    setShowNamePrompt(false)
+    setMode(pendingMode)
     setStep("idle")
     setStatusMessage("")
     setTxHash(undefined)
     setContractAddress(undefined)
     setError(undefined)
-    setIsOpen(true)
+    setIsDeployModalOpen(true)
   }
 
-  const closeModal = () => {
+  const closeDeployModal = () => {
     if (step !== "idle" && step !== "success" && step !== "error") return
-    setIsOpen(false)
+    setIsDeployModalOpen(false)
   }
 
-  // ── Real deployment function ──────────────────────────────────────
+  // ── Deploy function ───────────────────────────────────────────────
   const confirm = async () => {
     if (!address) {
       setError("Wallet disconnected. Please reconnect.")
@@ -176,7 +189,6 @@ export function ContractCard({
     }
 
     const contractData = CONTRACT_REGISTRY[id]
-
     if (!contractData) {
       setError(`${title} deployment data is missing. Please contact support.`)
       setStep("error")
@@ -190,6 +202,7 @@ export function ContractCard({
         address,
         mode,
         mode === "deploy-verify" ? verifyFee : deployFee,
+        contractName,
         mode === "deploy-verify"
           ? {
               contractName: contractData.compiler.name,
@@ -259,12 +272,7 @@ export function ContractCard({
               </span>
               <div className="mb-1 flex flex-wrap items-center gap-1.5">
                 {["ERC-20", "NFT Drop", "Multi-sig", "Airdrop"].map((t) => (
-                  <span
-                    key={t}
-                    className="rounded-md border border-white/[0.08] bg-white/[0.04] px-2 py-0.5 font-mono text-[10px] text-[var(--ink-3)] blur-[2px] select-none"
-                  >
-                    {t}
-                  </span>
+                  <span key={t} className="rounded-md border border-white/[0.08] bg-white/[0.04] px-2 py-0.5 font-mono text-[10px] text-[var(--ink-3)] blur-[2px] select-none">{t}</span>
                 ))}
                 <span className="text-[11px] text-[var(--ink-3)]">+ more templates</span>
               </div>
@@ -283,16 +291,10 @@ export function ContractCard({
             </div>
           </div>
           <div className="flex shrink-0 gap-2 sm:flex-col sm:w-[160px]">
-            <button
-              disabled
-              className="flex flex-1 cursor-not-allowed items-center justify-center gap-1.5 rounded-[8px] border border-white/[0.06] bg-white/[0.03] py-1.5 text-[12px] font-semibold text-[var(--ink-3)] opacity-50"
-            >
+            <button disabled className="flex flex-1 cursor-not-allowed items-center justify-center gap-1.5 rounded-[8px] border border-white/[0.06] bg-white/[0.03] py-1.5 text-[12px] font-semibold text-[var(--ink-3)] opacity-50">
               <Rocket className="h-3 w-3" strokeWidth={2} /> Deploy
             </button>
-            <button
-              disabled
-              className="flex flex-1 cursor-not-allowed items-center justify-center gap-1.5 rounded-[8px] border border-white/[0.06] bg-white/[0.03] py-1.5 text-[12px] font-semibold text-[var(--ink-3)] opacity-50"
-            >
+            <button disabled className="flex flex-1 cursor-not-allowed items-center justify-center gap-1.5 rounded-[8px] border border-white/[0.06] bg-white/[0.03] py-1.5 text-[12px] font-semibold text-[var(--ink-3)] opacity-50">
               <ShieldCheck className="h-3 w-3" strokeWidth={2} /> Deploy &amp; Verify
             </button>
           </div>
@@ -312,7 +314,6 @@ export function ContractCard({
           className="absolute left-0 right-0 top-0 h-0.5"
           style={{ background: border, borderRadius: "16px 16px 0 0" }}
         />
-
         <div className="flex flex-1 flex-col p-3.5 pt-4">
           <div
             className="mb-2.5 grid h-9 w-9 place-items-center rounded-[9px]"
@@ -320,34 +321,30 @@ export function ContractCard({
           >
             <Icon className="h-4 w-4 text-white" strokeWidth={2} />
           </div>
-
           <h3 className="mb-1 text-[14px] font-bold leading-snug tracking-tight text-[var(--ink)]">
             {title}
           </h3>
           <p className="mb-3 flex-1 text-[12px] leading-relaxed text-[var(--ink-2)]">
             {description}
           </p>
-
           {!CONTRACT_REGISTRY[id] && (
             <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-amber-400/30 bg-amber-400/10 px-2.5 py-0.5 text-[10px] font-semibold text-amber-300">
               🔧 Deployment coming soon
             </div>
           )}
-
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={() => openModal("deploy")}
+              onClick={() => openNamePrompt("deploy")}
               className="flex flex-1 items-center justify-center gap-1 rounded-[8px] border border-white/[0.10] bg-white/[0.05] px-2 py-1.5 text-[12px] font-semibold text-[var(--ink)] transition-all hover:border-white/[0.18] hover:bg-white/[0.09]"
             >
               <Rocket className="h-3 w-3 shrink-0" strokeWidth={2} />
               <span>Deploy</span>
               <span className="text-[10px] font-medium opacity-60">${deployFee.toFixed(2)}</span>
             </button>
-
             <button
               type="button"
-              onClick={() => openModal("deploy-verify")}
+              onClick={() => openNamePrompt("deploy-verify")}
               className="gradient-bg flex flex-1 items-center justify-center gap-1 rounded-[8px] px-2 py-1.5 text-[12px] font-semibold text-white shadow-[0_3px_10px_rgba(124,90,245,0.30)] transition-all hover:-translate-y-px hover:shadow-[0_5px_16px_rgba(124,90,245,0.50)]"
             >
               <ShieldCheck className="h-3 w-3 shrink-0" strokeWidth={2} />
@@ -359,8 +356,21 @@ export function ContractCard({
         </div>
       </div>
 
+      {/* Step 1 — Name prompt */}
+      <NamePromptModal
+        isOpen={showNamePrompt}
+        contractId={id}
+        contractTitle={title}
+        icon={Icon}
+        gradient={gradient}
+        glow={glow}
+        onConfirm={handleNameConfirmed}
+        onClose={() => setShowNamePrompt(false)}
+      />
+
+      {/* Step 2 — Deploy modal */}
       <DeploymentModal
-        isOpen={isOpen}
+        isOpen={isDeployModalOpen}
         contractId={id}
         contractTitle={title}
         contractDescription={description}
@@ -383,7 +393,7 @@ export function ContractCard({
           ) : null
         }
         onConfirm={confirm}
-        onClose={closeModal}
+        onClose={closeDeployModal}
       />
     </>
   )

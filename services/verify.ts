@@ -1,7 +1,5 @@
 /**
  * verify.ts — client-side verification caller
- * Calls our own Next.js API route /api/verify (server-side)
- * API key stays on server — never exposed to browser
  */
 
 export interface VerifyParams {
@@ -12,6 +10,7 @@ export interface VerifyParams {
   optimizationUsed: boolean
   optimizationRuns: number
   evmVersion?: string
+  constructorArguments?: string  // ← NEW: hex-encoded ABI constructor args
 }
 
 export type VerifyStatus = "verified" | "pending" | "failed" | "error" | "no-key"
@@ -49,7 +48,6 @@ export async function verifyContract(params: VerifyParams): Promise<VerifyResult
       message: data.message,
       explorerVerifiedUrl: data.explorerVerifiedUrl,
     }
-
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Network error."
     console.error("[verify] Exception →", message)

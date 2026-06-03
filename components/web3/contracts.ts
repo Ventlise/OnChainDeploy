@@ -44,7 +44,7 @@ export const CONTRACTS: ContractDef[] = [
   {
     id: "counter",
     title: "Counter",
-    description: "Increment, decrement, reset. The blockchain hello-world with state.",
+    description: "Track anything that needs counting — votes, attendance, sales. Every increment recorded forever.",
     icon: Plus,
     accent: "green",
     color: "#34d399",
@@ -55,7 +55,7 @@ export const CONTRACTS: ContractDef[] = [
   {
     id: "voting",
     title: "Voting",
-    description: "Lightweight on-chain governance — proposals, ballots, weighted votes.",
+    description: "Run polls and governance votes that nobody can fake. One wallet, one vote — permanent and public.",
     icon: Vote,
     accent: "amber",
     color: "#fbbf24",
@@ -75,7 +75,6 @@ export const CONTRACTS: ContractDef[] = [
     glow: "rgba(124, 90, 245, 0.35)",
     comingSoon: true,
     comingSoonLabel: "Coming Soon",
-    comingSoonExtra: "Join the waitlist to deploy first.",
   },
 ]
 

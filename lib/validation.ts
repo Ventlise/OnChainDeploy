@@ -1,8 +1,5 @@
 /**
  * lib/validation.ts
- *
- * Validates verify API request payload. Rejects anything malformed BEFORE
- * we make expensive BaseScan calls or hold the function open for minutes.
  */
 
 interface VerifyPayload {
@@ -13,6 +10,7 @@ interface VerifyPayload {
   optimizationUsed: boolean
   optimizationRuns: number
   evmVersion?: string
+  constructorArguments?: string
 }
 
 const ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/
@@ -23,14 +21,9 @@ const EVM_VERSIONS = new Set([
   "constantinople", "petersburg", "istanbul", "berlin", "london",
   "paris", "shanghai", "cancun",
 ])
+const MAX_SOURCE_BYTES = 200_000
+const MAX_RUNS = 1_000_000_000
 
-const MAX_SOURCE_BYTES = 200_000   // 200 KB — generous; real contracts are <50KB
-const MAX_RUNS = 1_000_000_000     // solc max
-
-/**
- * Validates a verify request payload. Returns an error message if invalid,
- * or null if everything checks out.
- */
 export function validateVerifyPayload(
   body: unknown,
 ): { ok: true; data: VerifyPayload } | { ok: false; error: string } {
@@ -41,17 +34,14 @@ export function validateVerifyPayload(
 
   const b = body as Record<string, unknown>
 
-  // ── contractAddress ────────────────────────────────────────────────
   if (typeof b.contractAddress !== "string" || !ADDRESS_REGEX.test(b.contractAddress)) {
     return { ok: false, error: "Invalid contract address format." }
   }
 
-  // ── contractName ───────────────────────────────────────────────────
   if (typeof b.contractName !== "string" || !CONTRACT_NAME_REGEX.test(b.contractName)) {
     return { ok: false, error: "Invalid contract name." }
   }
 
-  // ── sourceCode ─────────────────────────────────────────────────────
   if (typeof b.sourceCode !== "string" || b.sourceCode.length === 0) {
     return { ok: false, error: "Source code is required." }
   }
@@ -59,17 +49,14 @@ export function validateVerifyPayload(
     return { ok: false, error: `Source code exceeds ${MAX_SOURCE_BYTES} byte limit.` }
   }
 
-  // ── compilerVersion ────────────────────────────────────────────────
   if (typeof b.compilerVersion !== "string" || !COMPILER_REGEX.test(b.compilerVersion)) {
     return { ok: false, error: "Invalid compiler version format." }
   }
 
-  // ── optimizationUsed ───────────────────────────────────────────────
   if (typeof b.optimizationUsed !== "boolean") {
     return { ok: false, error: "optimizationUsed must be boolean." }
   }
 
-  // ── optimizationRuns ───────────────────────────────────────────────
   if (
     typeof b.optimizationRuns !== "number" ||
     !Number.isInteger(b.optimizationRuns) ||
@@ -79,10 +66,19 @@ export function validateVerifyPayload(
     return { ok: false, error: "Invalid optimizationRuns value." }
   }
 
-  // ── evmVersion (optional) ──────────────────────────────────────────
   if (b.evmVersion !== undefined) {
     if (typeof b.evmVersion !== "string" || !EVM_VERSIONS.has(b.evmVersion)) {
       return { ok: false, error: "Invalid evmVersion." }
+    }
+  }
+
+  // constructorArguments — optional hex string
+  if (b.constructorArguments !== undefined) {
+    if (
+      typeof b.constructorArguments !== "string" ||
+      !/^[0-9a-fA-F]*$/.test(b.constructorArguments)
+    ) {
+      return { ok: false, error: "Invalid constructorArguments format." }
     }
   }
 
@@ -96,6 +92,7 @@ export function validateVerifyPayload(
       optimizationUsed: b.optimizationUsed,
       optimizationRuns: b.optimizationRuns,
       evmVersion: b.evmVersion as string | undefined,
+      constructorArguments: b.constructorArguments as string | undefined,
     },
   }
 }
