@@ -88,5 +88,5 @@ export const SIMPLE_STORAGE_COMPILER = {
   evmVersion: "london",
 }
 
-export const SIMPLE_STORAGE_DEPLOY_FEE_USD = 0.05
-export const SIMPLE_STORAGE_VERIFY_FEE_USD = 0.10
+export const SIMPLE_STORAGE_DEPLOY_FEE_USD = 0
+export const SIMPLE_STORAGE_VERIFY_FEE_USD = 0.09

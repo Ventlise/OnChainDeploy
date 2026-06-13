@@ -1,7 +1,7 @@
-import { Database, Sparkles, Plus, Vote, Lock } from "lucide-react"
+import { Database, Sparkles, Plus, Vote, Lock, Sun } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
-export type ContractAccent = "purple" | "blue" | "green" | "amber" | "gradient"
+export type ContractAccent = "purple" | "blue" | "green" | "amber" | "orange" | "gradient"
 
 export interface ContractDef {
   id: string
@@ -13,16 +13,31 @@ export interface ContractDef {
   border: string
   gradient: string
   glow: string
+  skipNamePrompt?: boolean
   comingSoon?: boolean
   comingSoonLabel?: string
   comingSoonExtra?: string
 }
 
 export const CONTRACTS: ContractDef[] = [
+  // ── GM Beacon — flagship Web3 culture contract, always first ──────
+  {
+    id: "gm-beacon",
+    title: "GM Beacon",
+    description: "Say GM on-chain. Every wallet builds its own GM streak — your personal record, forever on Base.",
+    icon: Sun,
+    accent: "orange",
+    color: "#f97316",
+    border: "linear-gradient(90deg, #f59e0b, #f97316)",
+    gradient: "linear-gradient(135deg, #f59e0b, #f97316)",
+    glow: "rgba(249, 115, 22, 0.45)",
+    skipNamePrompt: true,
+  },
+  // ── Existing verified contracts ───────────────────────────────────
   {
     id: "simple-storage",
-    title: "Simple Storage",
-    description: "Store and retrieve a single uint256 value on-chain. Perfect first deploy.",
+    title: "Data Vault",
+    description: "Store any number permanently on-chain and read it back anytime. The simplest possible contract — perfect first deploy.",
     icon: Database,
     accent: "purple",
     color: "#7c5af5",
@@ -32,8 +47,8 @@ export const CONTRACTS: ContractDef[] = [
   },
   {
     id: "hello-base",
-    title: "Hello Base",
-    description: "A friendly greeter contract — set a message, read it back, emit events.",
+    title: "Hello Web3",
+    description: "Your first message on Base. Set it, update it, share it. Anyone can read it forever.",
     icon: Sparkles,
     accent: "blue",
     color: "#38bdf8",
@@ -43,8 +58,8 @@ export const CONTRACTS: ContractDef[] = [
   },
   {
     id: "counter",
-    title: "Counter",
-    description: "Track anything that needs counting — votes, attendance, sales. Every increment recorded forever.",
+    title: "Block Counter",
+    description: "Count anything that matters — fans, attendance, milestones. Every count locked on-chain forever.",
     icon: Plus,
     accent: "green",
     color: "#34d399",
@@ -63,6 +78,7 @@ export const CONTRACTS: ContractDef[] = [
     gradient: "linear-gradient(135deg, #fbbf24, #fb923c)",
     glow: "rgba(251, 191, 36, 0.45)",
   },
+  // ── Coming Soon — always last, rendered outside the grid ──────────
   {
     id: "coming-soon",
     title: "More Templates",

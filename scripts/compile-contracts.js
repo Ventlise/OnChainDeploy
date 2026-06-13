@@ -1,19 +1,38 @@
-// scripts/compile-contracts.js
 const solc = require("solc")
+const path = require("path")
+const fs = require("fs")
+
+// ── Solidity sources ──────────────────────────────────────────────────────────
+
+const GM_BEACON_SOURCE = `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.35;
+
+contract GMBeacon {
+    uint256 public gmCount;
+    mapping(address => uint256) public userGmCount;
+
+    event GM(
+        address indexed sender,
+        uint256 userTotal,
+        uint256 globalTotal
+    );
+
+    function gm() public {
+        gmCount++;
+        userGmCount[msg.sender]++;
+        emit GM(msg.sender, userGmCount[msg.sender], gmCount);
+    }
+}`
 
 const SIMPLE_STORAGE_SOURCE = `// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.23;
+pragma solidity ^0.8.35;
 
 contract SimpleStorage {
-    uint256 private storedData;
+    uint256 public storedData;
     string public name;
-    address public immutable deployer;
-    uint256 public immutable deployedAt;
 
     constructor(string memory _name) {
         name = _name;
-        deployer = msg.sender;
-        deployedAt = block.timestamp;
     }
 
     function set(uint256 x) public {
@@ -26,175 +45,160 @@ contract SimpleStorage {
 }`
 
 const HELLO_BASE_SOURCE = `// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.23;
+pragma solidity ^0.8.35;
 
 contract HelloBase {
-    string private message;
+    string public message;
     string public name;
-    address public immutable deployer;
-    uint256 public immutable deployedAt;
 
     event MessageUpdated(string newMessage, address updatedBy);
 
     constructor(string memory _name) {
         name = _name;
         message = "Hello, Base!";
-        deployer = msg.sender;
-        deployedAt = block.timestamp;
     }
 
-    function getMessage() public view returns (string memory) {
-        return message;
-    }
-
-    function setMessage(string calldata newMessage) public {
-        message = newMessage;
-        emit MessageUpdated(newMessage, msg.sender);
+    function setMessage(string calldata _message) public {
+        message = _message;
+        emit MessageUpdated(_message, msg.sender);
     }
 }`
 
 const COUNTER_SOURCE = `// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.23;
+pragma solidity ^0.8.35;
 
 contract Counter {
     uint256 public count;
     string public name;
-    address public immutable deployer;
-    uint256 public immutable deployedAt;
-
-    event CounterChanged(uint256 newValue, address changedBy);
 
     constructor(string memory _name) {
         name = _name;
-        deployer = msg.sender;
-        deployedAt = block.timestamp;
     }
 
     function increment() public {
-        count += 1;
-        emit CounterChanged(count, msg.sender);
+        count++;
     }
 
     function decrement() public {
-        require(count > 0, "Counter: already zero");
-        count -= 1;
-        emit CounterChanged(count, msg.sender);
+        require(count > 0, "Counter: already at zero");
+        count--;
     }
 
     function reset() public {
-        require(msg.sender == deployer, "Counter: not owner");
         count = 0;
-        emit CounterChanged(0, msg.sender);
     }
 }`
 
 const VOTING_SOURCE = `// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.23;
+pragma solidity ^0.8.35;
 
 contract Voting {
-    struct Proposal {
-        string description;
+    struct Candidate {
+        string name;
         uint256 voteCount;
     }
 
-    string public name;
-    address public immutable deployer;
-    uint256 public immutable deployedAt;
+    string public ballotName;
+    Candidate[] public candidates;
+    mapping(address => bool) public hasVoted;
 
-    Proposal[] public proposals;
-    uint256 public proposalCount;
-
-    mapping(uint256 => mapping(address => bool)) public hasVoted;
-
-    event ProposalCreated(uint256 indexed proposalId, string description);
-    event VoteCast(uint256 indexed proposalId, address indexed voter);
+    event Voted(address indexed voter, uint256 candidateIndex);
 
     constructor(string memory _name) {
-        name = _name;
-        deployer = msg.sender;
-        deployedAt = block.timestamp;
+        ballotName = _name;
+        candidates.push(Candidate("Option A", 0));
+        candidates.push(Candidate("Option B", 0));
     }
 
-    function createProposal(string calldata description) public {
-        require(msg.sender == deployer, "Voting: not owner");
-        proposals.push(Proposal({ description: description, voteCount: 0 }));
-        emit ProposalCreated(proposalCount, description);
-        proposalCount++;
+    function vote(uint256 candidateIndex) public {
+        require(!hasVoted[msg.sender], "Already voted");
+        require(candidateIndex < candidates.length, "Invalid candidate");
+        hasVoted[msg.sender] = true;
+        candidates[candidateIndex].voteCount++;
+        emit Voted(msg.sender, candidateIndex);
     }
 
-    function vote(uint256 proposalId) public {
-        require(proposalId < proposalCount, "Voting: invalid proposal");
-        require(!hasVoted[proposalId][msg.sender], "Voting: already voted");
-        hasVoted[proposalId][msg.sender] = true;
-        proposals[proposalId].voteCount += 1;
-        emit VoteCast(proposalId, msg.sender);
-    }
-
-    function getVoteCount(uint256 proposalId) public view returns (uint256) {
-        require(proposalId < proposalCount, "Voting: invalid proposal");
-        return proposals[proposalId].voteCount;
-    }
-
-    function getProposal(uint256 proposalId) public view returns (string memory) {
-        require(proposalId < proposalCount, "Voting: invalid proposal");
-        return proposals[proposalId].description;
+    function getCandidateCount() public view returns (uint256) {
+        return candidates.length;
     }
 }`
 
-function compile(contractName, source) {
-  const input = {
+// ── Compiler input builder ────────────────────────────────────────────────────
+
+function buildInput(contractName, source) {
+  return JSON.stringify({
     language: "Solidity",
-    sources: { [`${contractName}.sol`]: { content: source } },
+    sources: {
+      [`${contractName}.sol`]: { content: source },
+    },
     settings: {
       optimizer: { enabled: true, runs: 200 },
       evmVersion: "london",
-      outputSelection: { "*": { "*": ["abi", "evm.bytecode.object"] } },
+      outputSelection: {
+        "*": {
+          "*": ["abi", "evm.bytecode.object", "evm.deployedBytecode.object"],
+        },
+      },
     },
-  }
+  })
+}
 
-  const output = JSON.parse(solc.compile(JSON.stringify(input)))
+// ── Compile helper ────────────────────────────────────────────────────────────
+
+function compile(contractName, source) {
+  console.log(`\n📦 Compiling ${contractName}...`)
+  const output = JSON.parse(solc.compile(buildInput(contractName, source)))
 
   if (output.errors) {
     const errors = output.errors.filter((e) => e.severity === "error")
     if (errors.length > 0) {
-      console.error(`\n❌ Errors for ${contractName}:`)
+      console.error(`❌ Errors in ${contractName}:`)
       errors.forEach((e) => console.error(e.formattedMessage))
       process.exit(1)
     }
+    const warnings = output.errors.filter((e) => e.severity === "warning")
+    warnings.forEach((w) => console.warn(`⚠️  Warning: ${w.message}`))
   }
 
   const contract = output.contracts[`${contractName}.sol`][contractName]
-  return {
-    bytecode: "0x" + contract.evm.bytecode.object,
-    abi: contract.abi,
+  if (!contract) {
+    console.error(`❌ Contract ${contractName} not found in output`)
+    process.exit(1)
   }
+
+  const bytecode = "0x" + contract.evm.bytecode.object
+  const abi = contract.abi
+
+  console.log(`✅ ${contractName} compiled successfully`)
+  console.log(`   Bytecode length: ${bytecode.length} chars`)
+  console.log(`   ABI functions: ${abi.filter((x) => x.type === "function").length}`)
+  console.log(`\n── BYTECODE ──`)
+  console.log(bytecode)
+  console.log(`\n── ABI ──`)
+  console.log(JSON.stringify(abi, null, 2))
+
+  return { bytecode, abi }
 }
 
-console.log("\n🔨 Compiling all 4 contracts with solc", solc.version(), "\n")
+// ── Run ───────────────────────────────────────────────────────────────────────
 
-const simpleStorage = compile("SimpleStorage", SIMPLE_STORAGE_SOURCE)
-const helloBase     = compile("HelloBase",     HELLO_BASE_SOURCE)
-const counter       = compile("Counter",       COUNTER_SOURCE)
-const voting        = compile("Voting",        VOTING_SOURCE)
+const args = process.argv.slice(2)
+const target = args[0]?.toLowerCase()
 
-console.log("═══════════════════════════════════════")
-console.log("✅ SIMPLE STORAGE BYTECODE:")
-console.log(simpleStorage.bytecode)
+const contracts = {
+  gmbeacon:      { name: "GMBeacon",      source: GM_BEACON_SOURCE },
+  simplestorage: { name: "SimpleStorage", source: SIMPLE_STORAGE_SOURCE },
+  hellobase:     { name: "HelloBase",     source: HELLO_BASE_SOURCE },
+  counter:       { name: "Counter",       source: COUNTER_SOURCE },
+  voting:        { name: "Voting",        source: VOTING_SOURCE },
+}
 
-console.log("\n═══════════════════════════════════════")
-console.log("✅ HELLO BASE BYTECODE:")
-console.log(helloBase.bytecode)
-
-console.log("\n═══════════════════════════════════════")
-console.log("✅ COUNTER BYTECODE:")
-console.log(counter.bytecode)
-
-console.log("\n═══════════════════════════════════════")
-console.log("✅ VOTING BYTECODE:")
-console.log(voting.bytecode)
-
-const version = solc.version()
-const versionString = "v" + version.replace(".Emscripten.clang", "")
-console.log("\n✅ Done!")
-console.log("Version string for all contract files:", versionString)
-console.log("\n⚠️  Update COMPILER version in ALL 4 contract .ts files to:", versionString)
+if (target && contracts[target]) {
+  compile(contracts[target].name, contracts[target].source)
+} else if (!target) {
+  Object.values(contracts).forEach(({ name, source }) => compile(name, source))
+} else {
+  console.error(`❌ Unknown contract: ${target}`)
+  console.log(`Available: ${Object.keys(contracts).join(", ")}`)
+  process.exit(1)
+}

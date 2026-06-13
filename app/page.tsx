@@ -27,7 +27,7 @@ export default function HomePage() {
 
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-white/[0.08] bg-[rgba(13,13,24,0.65)] backdrop-blur-xl backdrop-saturate-150">
-        <div className="mx-auto flex max-w-[1280px] items-center gap-4 px-6 py-3.5">
+        <div className="mx-auto flex max-w-[1480px] items-center gap-4 px-6 py-3.5">
           <div
             className="gradient-bg grid h-10 w-10 flex-shrink-0 place-items-center rounded-[11px]"
             style={{ boxShadow: "0 8px 24px rgba(124,90,245,0.35)" }}
@@ -46,7 +46,7 @@ export default function HomePage() {
       </header>
 
       {/* Main layout */}
-      <div className="relative z-10 mx-auto max-w-[1280px] px-4 py-8 sm:px-6 sm:py-10">
+      <div className="relative z-10 mx-auto max-w-[1480px] px-4 py-8 sm:px-6 sm:py-10">
         <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_300px] lg:items-start lg:gap-8">
 
           {/* LEFT — hero + cards */}
@@ -61,8 +61,9 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {CONTRACTS.map((c) => (
+            {/* ── Regular contract cards — 3-column grid ── */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {CONTRACTS.filter((c) => !c.comingSoon).map((c) => (
                 <ContractCard
                   key={c.id}
                   {...c}
@@ -71,6 +72,16 @@ export default function HomePage() {
                 />
               ))}
             </div>
+
+            {/* ── Coming Soon — always on its own row below ── */}
+            {CONTRACTS.filter((c) => c.comingSoon).map((c) => (
+              <ContractCard
+                key={c.id}
+                {...c}
+                onDeploy={recordDeploy}
+                onDeployVerify={recordDeployVerify}
+              />
+            ))}
           </section>
 
           {/* RIGHT — sidebar */}
@@ -83,7 +94,7 @@ export default function HomePage() {
       </div>
 
       {/* Footer */}
-      <footer className="relative z-10 mx-auto mt-4 flex max-w-[1280px] flex-wrap items-center justify-between gap-3 border-t border-white/[0.08] px-4 py-5 text-[12.5px] text-[var(--ink-3)] sm:px-6">
+      <footer className="relative z-10 mx-auto mt-4 flex max-w-[1480px] flex-wrap items-center justify-between gap-3 border-t border-white/[0.08] px-4 py-5 text-[12.5px] text-[var(--ink-3)] sm:px-6">
         <div className="flex items-center gap-3">
           <span>© 2026 OnChainDeploy</span>
           <span className="inline-flex items-center gap-2 rounded-full border border-sky-400/20 bg-sky-400/10 px-3 py-1.5 text-[11.5px] font-semibold text-sky-300">

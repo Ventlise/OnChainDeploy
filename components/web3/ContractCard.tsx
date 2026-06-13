@@ -44,6 +44,14 @@ import {
   VOTING_DEPLOY_FEE_USD,
   VOTING_VERIFY_FEE_USD,
 } from "@/contracts/voting"
+import {
+  GM_BEACON_BYTECODE,
+  GM_BEACON_GAS_LIMIT,
+  GM_BEACON_SOURCE,
+  GM_BEACON_COMPILER,
+  GM_BEACON_DEPLOY_FEE_USD,
+  GM_BEACON_VERIFY_FEE_USD,
+} from "@/contracts/gm-beacon"
 
 interface ContractData {
   bytecode: string
@@ -61,6 +69,14 @@ interface ContractData {
 }
 
 const CONTRACT_REGISTRY: Record<string, ContractData> = {
+  "gm-beacon": {
+    bytecode: GM_BEACON_BYTECODE,
+    gasLimit: GM_BEACON_GAS_LIMIT,
+    source: GM_BEACON_SOURCE,
+    compiler: GM_BEACON_COMPILER,
+    deployFeeUsd: GM_BEACON_DEPLOY_FEE_USD,
+    verifyFeeUsd: GM_BEACON_VERIFY_FEE_USD,
+  },
   "simple-storage": {
     bytecode: SIMPLE_STORAGE_BYTECODE,
     gasLimit: SIMPLE_STORAGE_GAS_LIMIT,
@@ -108,6 +124,7 @@ interface ContractCardProps {
   comingSoon?: boolean
   comingSoonLabel?: string
   comingSoonExtra?: string
+  skipNamePrompt?: boolean
   onDeploy?: () => void
   onDeployVerify?: () => void
 }
@@ -124,6 +141,7 @@ export function ContractCard({
   comingSoon = false,
   comingSoonLabel,
   comingSoonExtra,
+  skipNamePrompt = false,
   onDeploy,
   onDeployVerify,
 }: ContractCardProps) {
@@ -159,7 +177,12 @@ export function ContractCard({
       return
     }
     setPendingMode(m)
-    setShowNamePrompt(true)
+    if (skipNamePrompt) {
+      // No name popup — go straight to deploy modal with empty name
+      handleNameConfirmed("")
+    } else {
+      setShowNamePrompt(true)
+    }
   }
 
   // ── Step 2: user confirmed name → open deploy modal ──────────────
@@ -250,14 +273,14 @@ export function ContractCard({
   if (comingSoon) {
     return (
       <div
-        className="glass relative col-span-1 sm:col-span-2 overflow-hidden p-4 opacity-80"
+        className="glass relative overflow-hidden p-4 opacity-80 max-w-4xl"
         style={{ borderRadius: 16 }}
       >
         <div
           className="absolute left-0 right-0 top-0 h-0.5"
           style={{ background: "linear-gradient(90deg,#7c5af5,#38bdf8)", borderRadius: "16px 16px 0 0" }}
         />
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
           <div className="flex items-start gap-3">
             <div
               className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-[10px]"
@@ -276,7 +299,7 @@ export function ContractCard({
                 ))}
                 <span className="text-[11px] text-[var(--ink-3)]">+ more templates</span>
               </div>
-              <p className="max-w-md text-[12px] leading-relaxed text-[var(--ink-2)]">{description}</p>
+              <p className="text-[12px] leading-relaxed text-[var(--ink-2)]">{description}</p>
               {comingSoonExtra && (
                 <p
                   className="mt-0.5 text-[12px] text-[var(--ink-2)]"
@@ -291,10 +314,10 @@ export function ContractCard({
             </div>
           </div>
           <div className="flex shrink-0 gap-2 sm:flex-col sm:w-[160px]">
-            <button disabled className="flex flex-1 cursor-not-allowed items-center justify-center gap-1.5 rounded-[8px] border border-white/[0.06] bg-white/[0.03] py-1.5 text-[12px] font-semibold text-[var(--ink-3)] opacity-50">
+            <button disabled className="flex flex-1 cursor-not-allowed items-center justify-center gap-1.5 whitespace-nowrap rounded-[8px] border border-white/[0.06] bg-white/[0.03] py-1.5 text-[11px] font-semibold text-[var(--ink-3)] opacity-50">
               <Rocket className="h-3 w-3" strokeWidth={2} /> Deploy
             </button>
-            <button disabled className="flex flex-1 cursor-not-allowed items-center justify-center gap-1.5 rounded-[8px] border border-white/[0.06] bg-white/[0.03] py-1.5 text-[12px] font-semibold text-[var(--ink-3)] opacity-50">
+            <button disabled className="flex flex-1 cursor-not-allowed items-center justify-center gap-1.5 whitespace-nowrap rounded-[8px] border border-white/[0.06] bg-white/[0.03] py-1.5 text-[11px] font-semibold text-[var(--ink-3)] opacity-50">
               <ShieldCheck className="h-3 w-3" strokeWidth={2} /> Deploy &amp; Verify
             </button>
           </div>
@@ -336,21 +359,25 @@ export function ContractCard({
             <button
               type="button"
               onClick={() => openNamePrompt("deploy")}
-              className="flex flex-1 items-center justify-center gap-1 rounded-[8px] border border-white/[0.10] bg-white/[0.05] px-2 py-1.5 text-[12px] font-semibold text-[var(--ink)] transition-all hover:border-white/[0.18] hover:bg-white/[0.09]"
+              className="flex flex-1 items-center justify-center gap-1 whitespace-nowrap rounded-[8px] border border-white/[0.10] bg-white/[0.05] px-1.5 py-1.5 text-[11px] font-semibold text-[var(--ink)] transition-all hover:border-white/[0.18] hover:bg-white/[0.09]"
             >
               <Rocket className="h-3 w-3 shrink-0" strokeWidth={2} />
               <span>Deploy</span>
-              <span className="text-[10px] font-medium opacity-60">${deployFee.toFixed(2)}</span>
+              <span className="text-[10px] font-medium opacity-60">
+                {deployFee > 0 ? `$${deployFee.toFixed(2)}` : "Free"}
+              </span>
             </button>
             <button
               type="button"
               onClick={() => openNamePrompt("deploy-verify")}
-              className="gradient-bg flex flex-1 items-center justify-center gap-1 rounded-[8px] px-2 py-1.5 text-[12px] font-semibold text-white shadow-[0_3px_10px_rgba(124,90,245,0.30)] transition-all hover:-translate-y-px hover:shadow-[0_5px_16px_rgba(124,90,245,0.50)]"
+              className="gradient-bg flex flex-1 items-center justify-center gap-1 whitespace-nowrap rounded-[8px] px-1.5 py-1.5 text-[11px] font-semibold text-white shadow-[0_3px_10px_rgba(124,90,245,0.30)] transition-all hover:-translate-y-px hover:shadow-[0_5px_16px_rgba(124,90,245,0.50)]"
             >
               <ShieldCheck className="h-3 w-3 shrink-0" strokeWidth={2} />
               <span className="hidden sm:inline">Deploy &amp; Verify</span>
               <span className="sm:hidden">+ Verify</span>
-              <span className="text-[10px] font-medium opacity-75">${verifyFee.toFixed(2)}</span>
+              <span className="text-[10px] font-medium opacity-75">
+                {verifyFee > 0 ? `$${verifyFee.toFixed(2)}` : "Free"}
+              </span>
             </button>
           </div>
         </div>

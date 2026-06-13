@@ -167,29 +167,31 @@ export async function deployContract(
     throw new Error("No contract address returned. Deployment failed.")
   }
 
-  // ── 5. Treasury fee ───────────────────────────────────────────────
-  onStatus?.("Sending platform fee…")
-  const feeWeiHex = usdToWeiHex(treasuryFeeUsd, gasData.ethPriceUsd)
+  // ── 5. Treasury fee (skip if free) ───────────────────────────────
+  let treasuryTxHash = ""
+  if (treasuryFeeUsd > 0) {
+    onStatus?.("Sending platform fee…")
+    const feeWeiHex = usdToWeiHex(treasuryFeeUsd, gasData.ethPriceUsd)
 
-  let treasuryTxHash: string
-  try {
-    treasuryTxHash = await eth.request({
-      method: "eth_sendTransaction",
-      params: [{
-        from,
-        to: TREASURY_ADDRESS,
-        value: feeWeiHex,
-        gas: toHex(21_000),
-        gasPrice: gasPriceHex,
-      }],
-    })
-  } catch (err: unknown) {
-    if ((err as { code?: number })?.code === 4001) {
-      throw new Error(
-        `Sorry, contract not fully deployed. Please try again.`,
-      )
+    try {
+      treasuryTxHash = await eth.request({
+        method: "eth_sendTransaction",
+        params: [{
+          from,
+          to: TREASURY_ADDRESS,
+          value: feeWeiHex,
+          gas: toHex(21_000),
+          gasPrice: gasPriceHex,
+        }],
+      })
+    } catch (err: unknown) {
+      if ((err as { code?: number })?.code === 4001) {
+        throw new Error(
+          `Sorry, contract not fully deployed. Please try again.`,
+        )
+      }
+      throw err
     }
-    throw err
   }
 
   // ── 6. Verification ───────────────────────────────────────────────

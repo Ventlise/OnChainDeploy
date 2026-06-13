@@ -115,12 +115,12 @@ Two options on every contract card:
 
 OPTION 1 — Deploy:
 - Actual gas fee (dynamic per contract)
-- Fixed treasury fee: $0.15
+- Fixed treasury fee: $0
 - Total shown to user at confirmation only
 
 OPTION 2 — Deploy & Verify:
 - Actual gas fee (dynamic per contract)  
-- Fixed treasury fee: $0.30
+- Fixed treasury fee: $0.09
 - Total shown to user at confirmation only
 
 Treasury Rules (STRICT):

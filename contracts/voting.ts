@@ -176,5 +176,5 @@ export const VOTING_COMPILER = {
   evmVersion: "london",
 }
 
-export const VOTING_DEPLOY_FEE_USD = 0.25
-export const VOTING_VERIFY_FEE_USD = 0.35
+export const VOTING_DEPLOY_FEE_USD = 0
+export const VOTING_VERIFY_FEE_USD = 0.09

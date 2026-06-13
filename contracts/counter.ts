@@ -122,5 +122,5 @@ export const COUNTER_COMPILER = {
   evmVersion: "london",
 }
 
-export const COUNTER_DEPLOY_FEE_USD = 0.15
-export const COUNTER_VERIFY_FEE_USD = 0.25
+export const COUNTER_DEPLOY_FEE_USD = 0
+export const COUNTER_VERIFY_FEE_USD = 0.09

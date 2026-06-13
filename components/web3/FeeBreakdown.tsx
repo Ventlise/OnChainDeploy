@@ -27,10 +27,16 @@ export function FeeBreakdown({ contractId, mode, platformFeeUsd }: FeeBreakdownP
     <div className="flex flex-col gap-2.5">
 
       <div className="flex items-center justify-between text-[13.5px]">
-        <span className="text-[var(--ink-2)]">Estimated gas</span>
-        <span className="font-mono font-semibold text-[var(--ink)]">
-          {isLoading ? "…" : `${gasCostEth.toFixed(6)} ETH`}
-        </span>
+        <span className="text-[var(--ink-2)]">Platform fee</span>
+        {platformFeeUsd === 0 ? (
+          <span className="rounded-md bg-emerald-400/15 px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-wider text-emerald-300">
+            FREE
+          </span>
+        ) : (
+          <span className="font-mono font-semibold text-[var(--ink)]">
+            ${platformFeeUsd.toFixed(2)}
+          </span>
+        )}
       </div>
 
       <div className="flex items-center justify-between text-[13.5px]">

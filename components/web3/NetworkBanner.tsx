@@ -10,7 +10,7 @@ export function NetworkBanner() {
 
   return (
     <div className="relative z-40 border-b border-amber-400/20 bg-amber-400/[0.06] px-4 py-2.5">
-      <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-3">
+      <div className="mx-auto flex max-w-[1480px] flex-wrap items-center justify-between gap-3">
 
         {/* Warning message */}
         <div className="flex items-center gap-2.5">
