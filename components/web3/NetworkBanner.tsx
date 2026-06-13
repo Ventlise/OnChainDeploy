@@ -1,16 +1,19 @@
 "use client"
 
 import { useNetwork } from "@/hooks/useNetwork"
+import { useWallet } from "@/hooks/useWallet"
 
 export function NetworkBanner() {
   const { isCorrectNetwork, isSwitching, switchToBase } = useNetwork()
+  const { isConnected } = useWallet()
 
-  // If wallet is on correct network — show nothing
+  // Only show banner if wallet IS connected AND on wrong network
+  if (!isConnected) return null
   if (isCorrectNetwork) return null
 
   return (
     <div className="relative z-40 border-b border-amber-400/20 bg-amber-400/[0.06] px-4 py-2.5">
-      <div className="mx-auto flex max-w-[1480px] flex-wrap items-center justify-between gap-3">
+      <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-3">
 
         {/* Warning message */}
         <div className="flex items-center gap-2.5">
