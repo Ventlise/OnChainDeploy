@@ -1,0 +1,123 @@
+/**
+ * contracts/visitor-tracker.ts
+ * Contract:    VisitorTracker
+ * Network:     Base Mainnet (chainId: 8453)
+ * Compiler:    solc 0.8.35+commit.47b9dedd
+ * Optimization: ON — runs: 200
+ * EVM Version: london
+ * Constructor: string memory _name (makes every deployment unique)
+ */
+
+export const VISITOR_TRACKER_BYTECODE =
+  "0x60c060405234801561001057600080fd5b506040516105dc3803806105dc83398101604081905261002f91610060565b600261003b82826101c2565b5050336080524260a052610284565b634e487b7160e01b600052604160045260246000fd5b60006020828403121561007257600080fd5b81516001600160401b0381111561008857600080fd5b8201601f8101841361009957600080fd5b80516001600160401b038111156100b2576100b261004a565b604051601f8201601f19908116603f011681016001600160401b03811182821017156100e0576100e061004a565b6040528181528282016020018610156100f857600080fd5b60005b82811015610117576020818501810151838301820152016100fb565b50600091810160200191909152949350505050565b600181811c9082168061014057607f821691505b60208210810361016057634e487b7160e01b600052602260045260246000fd5b50919050565b601f8211156101bd57828211156101bd57806000526020600020601f840160051c6020851015610194575060005b90810190601f840160051c0360005b818110156101b9576000838201556001016101a3565b5050505b505050565b81516001600160401b038111156101db576101db61004a565b6101ef816101e9845461012c565b84610166565b6020601f821160018114610223576000831561020b5750848201515b600019600385901b1c1916600184901b17845561027d565b600084815260208120601f198516915b828110156102535787850151825560209485019460019092019101610233565b50848210156102715786840151600019600387901b60f8161c191681555b505060018360011b0184555b5050505050565b60805160a0516103346102a8600039600061013b0152600060fd01526103346000f3fe608060405234801561001057600080fd5b506004361061007d5760003560e01c8063c59d48471161005b578063c59d4847146100d5578063d5f39488146100f8578063e0e4367e1461011f578063eae4c19f1461013657600080fd5b806306fdde03146100825780630cc4330c146100a057806327c0b4d5146100aa575b600080fd5b61008a61015d565b604051610097919061024f565b60405180910390f35b6100a86101eb565b005b6001546100bd906001600160a01b031681565b6040516001600160a01b039091168152602001610097565b600054600154604080519283526001600160a01b03909116602083015201610097565b6100bd7f000000000000000000000000000000000000000000000000000000000000000081565b61012860005481565b604051908152602001610097565b6101287f000000000000000000000000000000000000000000000000000000000000000081565b6002805461016a9061029d565b80601f01602080910402602001604051908101604052809291908181526020018280546101969061029d565b80156101e35780601f106101b8576101008083540402835291602001916101e3565b820191906000526020600020905b8154815290600101906020018083116101c657829003601f168201915b505050505081565b60016000808282546101fd91906102d7565b9091555050600180546001600160a01b031916339081179091556000546040519081527f3ffb1f31a82f354110c882754440600dcd8b26e79612ad5289f993a34b6615d79060200160405180910390a2565b602081526000825180602084015260005b8181101561027d5760208186018101516040868401015201610260565b506000604082850101526040601f19601f83011684010191505092915050565b600181811c908216806102b157607f821691505b6020821081036102d157634e487b7160e01b600052602260045260246000fd5b50919050565b808201808211156102f857634e487b7160e01b600052601160045260246000fd5b9291505056fea264697066735822122029916da25f5a06e3cef82f2d3b3510c6b82ac3e23f37a7637b5b6f2527ecf85864736f6c63430008230033"
+
+export const VISITOR_TRACKER_ABI = [
+  {
+    inputs: [{ internalType: "string", name: "_name", type: "string" }],
+    stateMutability: "nonpayable",
+    type: "constructor",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: "address", name: "visitor", type: "address" },
+      { indexed: false, internalType: "uint256", name: "totalVisits", type: "uint256" },
+    ],
+    name: "Visited",
+    type: "event",
+  },
+  {
+    inputs: [],
+    name: "deployedAt",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "deployer",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getStats",
+    outputs: [
+      { internalType: "uint256", name: "", type: "uint256" },
+      { internalType: "address", name: "", type: "address" },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "lastVisitor",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "name",
+    outputs: [{ internalType: "string", name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "visit",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "visitCount",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+] as const
+
+export const VISITOR_TRACKER_GAS_LIMIT = 220_000
+
+export const VISITOR_TRACKER_SOURCE = `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.35;
+
+contract VisitorTracker {
+    uint256 public visitCount;
+    address public lastVisitor;
+    string public name;
+    address public immutable deployer;
+    uint256 public immutable deployedAt;
+
+    event Visited(address indexed visitor, uint256 totalVisits);
+
+    constructor(string memory _name) {
+        name = _name;
+        deployer = msg.sender;
+        deployedAt = block.timestamp;
+    }
+
+    function visit() public {
+        visitCount += 1;
+        lastVisitor = msg.sender;
+        emit Visited(msg.sender, visitCount);
+    }
+
+    function getStats() public view returns (uint256, address) {
+        return (visitCount, lastVisitor);
+    }
+}`
+
+export const VISITOR_TRACKER_COMPILER = {
+  name: "VisitorTracker",
+  version: "v0.8.35+commit.47b9dedd",
+  optimizationUsed: true,
+  optimizationRuns: 200,
+  evmVersion: "london",
+}
+
+export const VISITOR_TRACKER_DEPLOY_FEE_USD = 0
+export const VISITOR_TRACKER_VERIFY_FEE_USD = 0.09

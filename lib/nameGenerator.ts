@@ -65,6 +65,30 @@ export const CONTRACT_NAME_CONFIGS: Record<string, ContractNameConfig> = {
     placeholder: "Team Pizza Choice",
     defaultPrefix: "Ballot",
   },
+  "mood-tracker": {
+    prefix: "Mood Tracker",
+    prompt: "Name your mood board",
+    placeholder: "Vibe Check",
+    defaultPrefix: "Mood",
+  },
+  "visitor-tracker": {
+    prefix: "Visitor Tracker",
+    prompt: "What are you tracking?",
+    placeholder: "My Blog Visits",
+    defaultPrefix: "Visits",
+  },
+  "chain-notes": {
+    prefix: "Chain Notes",
+    prompt: "Name your notebook",
+    placeholder: "Daily Log",
+    defaultPrefix: "Notes",
+  },
+  "lucky-block": {
+    prefix: "Lucky Block",
+    prompt: "Name your lucky vault",
+    placeholder: "My Lucky 7s",
+    defaultPrefix: "Lucky",
+  },
 }
 
 /**

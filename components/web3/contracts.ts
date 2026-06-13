@@ -1,7 +1,7 @@
-import { Database, Sparkles, Plus, Vote, Lock, Sun } from "lucide-react"
+import { Database, Sparkles, Plus, Vote, Lock, Smile, Users, FileText, Dice6, Sun } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
-export type ContractAccent = "purple" | "blue" | "green" | "amber" | "orange" | "gradient"
+export type ContractAccent = "purple" | "blue" | "green" | "amber" | "gradient" | "pink" | "teal" | "orange" | "indigo" | "yellow"
 
 export interface ContractDef {
   id: string
@@ -13,31 +13,27 @@ export interface ContractDef {
   border: string
   gradient: string
   glow: string
-  skipNamePrompt?: boolean
   comingSoon?: boolean
   comingSoonLabel?: string
   comingSoonExtra?: string
 }
 
 export const CONTRACTS: ContractDef[] = [
-  // ── GM Beacon — flagship Web3 culture contract, always first ──────
   {
     id: "gm-beacon",
     title: "GM Beacon",
-    description: "Say GM on-chain. Every wallet builds its own GM streak — your personal record, forever on Base.",
+    description: "Say GM on-chain. Tracks a global GM count and your personal GM streak — forever on Base.",
     icon: Sun,
-    accent: "orange",
-    color: "#f97316",
-    border: "linear-gradient(90deg, #f59e0b, #f97316)",
-    gradient: "linear-gradient(135deg, #f59e0b, #f97316)",
-    glow: "rgba(249, 115, 22, 0.45)",
-    skipNamePrompt: true,
+    accent: "yellow",
+    color: "#facc15",
+    border: "linear-gradient(90deg, #facc15, #fb923c)",
+    gradient: "linear-gradient(135deg, #facc15, #fb923c)",
+    glow: "rgba(250, 204, 21, 0.45)",
   },
-  // ── Existing verified contracts ───────────────────────────────────
   {
     id: "simple-storage",
-    title: "Data Vault",
-    description: "Store any number permanently on-chain and read it back anytime. The simplest possible contract — perfect first deploy.",
+    title: "Simple Storage",
+    description: "Store and retrieve a single uint256 value on-chain. Perfect first deploy.",
     icon: Database,
     accent: "purple",
     color: "#7c5af5",
@@ -47,8 +43,8 @@ export const CONTRACTS: ContractDef[] = [
   },
   {
     id: "hello-base",
-    title: "Hello Web3",
-    description: "Your first message on Base. Set it, update it, share it. Anyone can read it forever.",
+    title: "Hello Base",
+    description: "A friendly greeter contract — set a message, read it back, emit events.",
     icon: Sparkles,
     accent: "blue",
     color: "#38bdf8",
@@ -58,8 +54,8 @@ export const CONTRACTS: ContractDef[] = [
   },
   {
     id: "counter",
-    title: "Block Counter",
-    description: "Count anything that matters — fans, attendance, milestones. Every count locked on-chain forever.",
+    title: "Counter",
+    description: "Track anything that needs counting — votes, attendance, sales. Every increment recorded forever.",
     icon: Plus,
     accent: "green",
     color: "#34d399",
@@ -78,7 +74,50 @@ export const CONTRACTS: ContractDef[] = [
     gradient: "linear-gradient(135deg, #fbbf24, #fb923c)",
     glow: "rgba(251, 191, 36, 0.45)",
   },
-  // ── Coming Soon — always last, rendered outside the grid ──────────
+  {
+    id: "mood-tracker",
+    title: "Mood Tracker",
+    description: "Write your current mood on-chain with a timestamp. Your feelings, forever on Base.",
+    icon: Smile,
+    accent: "pink",
+    color: "#f472b6",
+    border: "linear-gradient(90deg, #f472b6, #e879f9)",
+    gradient: "linear-gradient(135deg, #f472b6, #e879f9)",
+    glow: "rgba(244, 114, 182, 0.45)",
+  },
+  {
+    id: "visitor-tracker",
+    title: "Visitor Tracker",
+    description: "Count every wallet that visits. See the total count and who stopped by last.",
+    icon: Users,
+    accent: "teal",
+    color: "#2dd4bf",
+    border: "linear-gradient(90deg, #2dd4bf, #34d399)",
+    gradient: "linear-gradient(135deg, #2dd4bf, #34d399)",
+    glow: "rgba(45, 212, 191, 0.45)",
+  },
+  {
+    id: "chain-notes",
+    title: "Chain Notes",
+    description: "Leave a permanent note on Base with your wallet address and timestamp attached.",
+    icon: FileText,
+    accent: "orange",
+    color: "#fb923c",
+    border: "linear-gradient(90deg, #fb923c, #fbbf24)",
+    gradient: "linear-gradient(135deg, #fb923c, #fbbf24)",
+    glow: "rgba(251, 146, 60, 0.45)",
+  },
+  {
+    id: "lucky-block",
+    title: "Lucky Block",
+    description: "Every wallet stores its own lucky number. Set yours and check anyone else's on-chain.",
+    icon: Dice6,
+    accent: "indigo",
+    color: "#818cf8",
+    border: "linear-gradient(90deg, #818cf8, #a78bfa)",
+    gradient: "linear-gradient(135deg, #818cf8, #a78bfa)",
+    glow: "rgba(129, 140, 248, 0.45)",
+  },
   {
     id: "coming-soon",
     title: "More Templates",

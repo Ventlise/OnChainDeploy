@@ -52,6 +52,38 @@ import {
   GM_BEACON_DEPLOY_FEE_USD,
   GM_BEACON_VERIFY_FEE_USD,
 } from "@/contracts/gm-beacon"
+import {
+  MOOD_TRACKER_BYTECODE,
+  MOOD_TRACKER_GAS_LIMIT,
+  MOOD_TRACKER_SOURCE,
+  MOOD_TRACKER_COMPILER,
+  MOOD_TRACKER_DEPLOY_FEE_USD,
+  MOOD_TRACKER_VERIFY_FEE_USD,
+} from "@/contracts/mood-tracker"
+import {
+  VISITOR_TRACKER_BYTECODE,
+  VISITOR_TRACKER_GAS_LIMIT,
+  VISITOR_TRACKER_SOURCE,
+  VISITOR_TRACKER_COMPILER,
+  VISITOR_TRACKER_DEPLOY_FEE_USD,
+  VISITOR_TRACKER_VERIFY_FEE_USD,
+} from "@/contracts/visitor-tracker"
+import {
+  CHAIN_NOTES_BYTECODE,
+  CHAIN_NOTES_GAS_LIMIT,
+  CHAIN_NOTES_SOURCE,
+  CHAIN_NOTES_COMPILER,
+  CHAIN_NOTES_DEPLOY_FEE_USD,
+  CHAIN_NOTES_VERIFY_FEE_USD,
+} from "@/contracts/chain-notes"
+import {
+  LUCKY_BLOCK_BYTECODE,
+  LUCKY_BLOCK_GAS_LIMIT,
+  LUCKY_BLOCK_SOURCE,
+  LUCKY_BLOCK_COMPILER,
+  LUCKY_BLOCK_DEPLOY_FEE_USD,
+  LUCKY_BLOCK_VERIFY_FEE_USD,
+} from "@/contracts/lucky-block"
 
 interface ContractData {
   bytecode: string
@@ -109,6 +141,38 @@ const CONTRACT_REGISTRY: Record<string, ContractData> = {
     deployFeeUsd: VOTING_DEPLOY_FEE_USD,
     verifyFeeUsd: VOTING_VERIFY_FEE_USD,
   },
+  "mood-tracker": {
+    bytecode: MOOD_TRACKER_BYTECODE,
+    gasLimit: MOOD_TRACKER_GAS_LIMIT,
+    source: MOOD_TRACKER_SOURCE,
+    compiler: MOOD_TRACKER_COMPILER,
+    deployFeeUsd: MOOD_TRACKER_DEPLOY_FEE_USD,
+    verifyFeeUsd: MOOD_TRACKER_VERIFY_FEE_USD,
+  },
+  "visitor-tracker": {
+    bytecode: VISITOR_TRACKER_BYTECODE,
+    gasLimit: VISITOR_TRACKER_GAS_LIMIT,
+    source: VISITOR_TRACKER_SOURCE,
+    compiler: VISITOR_TRACKER_COMPILER,
+    deployFeeUsd: VISITOR_TRACKER_DEPLOY_FEE_USD,
+    verifyFeeUsd: VISITOR_TRACKER_VERIFY_FEE_USD,
+  },
+  "chain-notes": {
+    bytecode: CHAIN_NOTES_BYTECODE,
+    gasLimit: CHAIN_NOTES_GAS_LIMIT,
+    source: CHAIN_NOTES_SOURCE,
+    compiler: CHAIN_NOTES_COMPILER,
+    deployFeeUsd: CHAIN_NOTES_DEPLOY_FEE_USD,
+    verifyFeeUsd: CHAIN_NOTES_VERIFY_FEE_USD,
+  },
+  "lucky-block": {
+    bytecode: LUCKY_BLOCK_BYTECODE,
+    gasLimit: LUCKY_BLOCK_GAS_LIMIT,
+    source: LUCKY_BLOCK_SOURCE,
+    compiler: LUCKY_BLOCK_COMPILER,
+    deployFeeUsd: LUCKY_BLOCK_DEPLOY_FEE_USD,
+    verifyFeeUsd: LUCKY_BLOCK_VERIFY_FEE_USD,
+  },
 }
 
 interface ContractCardProps {
@@ -148,11 +212,9 @@ export function ContractCard({
   const { address, isConnected } = useWallet()
   const { isCorrectNetwork } = useNetwork()
 
-  // ── Fees defined first so confirm() can use them ──────────────────
   const deployFee = CONTRACT_REGISTRY[id]?.deployFeeUsd ?? DEPLOY_FEE_USD
   const verifyFee = CONTRACT_REGISTRY[id]?.verifyFeeUsd ?? VERIFY_FEE_USD
 
-  // ── Modal state ───────────────────────────────────────────────────
   const [showNamePrompt, setShowNamePrompt] = useState(false)
   const [isDeployModalOpen, setIsDeployModalOpen] = useState(false)
   const [pendingMode, setPendingMode] = useState<DeployMode>("deploy")
@@ -165,7 +227,6 @@ export function ContractCard({
   const [contractAddress, setContractAddress] = useState<string>()
   const [error, setError] = useState<string>()
 
-  // ── Step 1: validate + show name prompt ──────────────────────────
   const openNamePrompt = (m: DeployMode) => {
     if (comingSoon) return
     if (!isConnected || !address) {
@@ -178,14 +239,12 @@ export function ContractCard({
     }
     setPendingMode(m)
     if (skipNamePrompt) {
-      // No name popup — go straight to deploy modal with empty name
       handleNameConfirmed("")
     } else {
       setShowNamePrompt(true)
     }
   }
 
-  // ── Step 2: user confirmed name → open deploy modal ──────────────
   const handleNameConfirmed = (name: string) => {
     setContractName(name)
     setShowNamePrompt(false)
@@ -203,7 +262,6 @@ export function ContractCard({
     setIsDeployModalOpen(false)
   }
 
-  // ── Deploy function ───────────────────────────────────────────────
   const confirm = async () => {
     if (!address) {
       setError("Wallet disconnected. Please reconnect.")
@@ -269,18 +327,18 @@ export function ContractCard({
 
   const isDeploying = step !== "idle" && step !== "success" && step !== "error"
 
-  /* ── COMING SOON CARD ────────────────────────────────────────────── */
+  /* ── COMING SOON CARD ─────────────────────────────────────────── */
   if (comingSoon) {
     return (
       <div
-        className="glass relative overflow-hidden p-4 opacity-80 max-w-4xl"
+  className="glass relative overflow-hidden p-4 opacity-80"
         style={{ borderRadius: 16 }}
       >
         <div
           className="absolute left-0 right-0 top-0 h-0.5"
           style={{ background: "linear-gradient(90deg,#7c5af5,#38bdf8)", borderRadius: "16px 16px 0 0" }}
         />
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
             <div
               className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-[10px]"
@@ -313,7 +371,7 @@ export function ContractCard({
               )}
             </div>
           </div>
-          <div className="flex shrink-0 gap-2 sm:flex-col sm:w-[160px]">
+          <div className="flex shrink-0 gap-2 sm:flex-col sm:w-[160px] sm:ml-auto">
             <button disabled className="flex flex-1 cursor-not-allowed items-center justify-center gap-1.5 whitespace-nowrap rounded-[8px] border border-white/[0.06] bg-white/[0.03] py-1.5 text-[11px] font-semibold text-[var(--ink-3)] opacity-50">
               <Rocket className="h-3 w-3" strokeWidth={2} /> Deploy
             </button>
@@ -326,7 +384,7 @@ export function ContractCard({
     )
   }
 
-  /* ── REGULAR CARD ────────────────────────────────────────────────── */
+  /* ── REGULAR CARD ─────────────────────────────────────────────── */
   return (
     <>
       <div
