@@ -219,7 +219,7 @@ function TermsModal({ onClose }: { onClose: () => void }) {
 
           <section>
             <h3 className="mb-1.5 text-[13px] font-bold text-[var(--ink)]">11. Contact</h3>
-            <p>For questions about these terms, please reach out through our official channels. OnChainDeploy is built by an independent team and is not affiliated with Coinbase, Base protocol, or Anthropic.</p>
+            <p>For questions about these terms, please reach out through our official channels.</p>
           </section>
         </div>
 

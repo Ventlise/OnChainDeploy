@@ -24,8 +24,15 @@
   --red: #f87171;
 }
 
-* {
-  box-sizing: border-box;
+html {
+  /* Lock the base font size so all browsers measure spacing identically */
+  font-size: 16px;
+  /* Prevent mobile browsers from auto-resizing text */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* Smoother scaling */
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
 }
 
 html,
@@ -36,7 +43,30 @@ body {
   color: var(--ink);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Force consistent font rendering across Chrome / Brave / Firefox / Safari */
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern";
   min-height: 100vh;
+}
+
+/* Make every element measure the same way in all browsers */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Lock buttons and inputs to inherit the same font everywhere */
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
 }
 
 /* Animated background orbs */
