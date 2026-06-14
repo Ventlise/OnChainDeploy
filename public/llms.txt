@@ -1,0 +1,48 @@
+# OnChainDeploy
+
+> OnChainDeploy is a no-code smart contract deployment platform on Base Mainnet. It lets anyone deploy and verify smart contracts with one click — no Solidity, no Remix, no coding required.
+
+## What it does
+
+OnChainDeploy allows non-technical users to deploy pre-tested smart contract templates to Base Mainnet (Ethereum Layer 2, chain ID 8453) directly from their browser using a Web3 wallet such as MetaMask or Rabby.
+
+## Key facts
+
+- Deployment is free — users only pay Base network gas fees (typically a fraction of a cent)
+- Optional contract verification on BaseScan costs a flat $0.09 paid in ETH
+- Fully non-custodial — the platform never holds user funds, private keys, or controls contracts
+- Supported wallets: MetaMask, Rabby
+- Network: Base Mainnet (chain ID 8453)
+- All deployments are permanent and recorded on-chain
+
+## Available contract templates
+
+- GM Beacon — say GM on-chain with a global and personal counter
+- Simple Storage — store and retrieve a single value on-chain
+- Hello Base — a greeter contract that stores and emits messages
+- Counter — track increments permanently on-chain
+- Voting — run tamper-proof one-wallet-one-vote polls
+- Mood Tracker — record a mood with a timestamp
+- Visitor Tracker — count visits and track the last visitor
+- Chain Notes — leave a permanent note with wallet and timestamp
+- Lucky Block — every wallet stores its own lucky number
+
+Coming soon: ERC-20 tokens, NFT drops, multi-sig wallets, airdrop tools.
+
+## How it works
+
+1. Connect a Web3 wallet (MetaMask or Rabby)
+2. Choose a contract template
+3. Click Deploy — confirm the transaction in your wallet
+4. The contract is live on Base Mainnet instantly
+5. Optionally verify the source code on BaseScan for $0.09
+
+## Why use OnChainDeploy instead of Remix
+
+Remix requires writing or pasting Solidity code, manual compilation, and understanding deployment parameters. OnChainDeploy requires none of this — it is designed for people who want a deployed, verified contract without any technical complexity.
+
+## Links
+
+- Website: https://on-chain-deploy.vercel.app
+- Built on: Base (https://base.org)
+- Explorer: BaseScan (https://basescan.org)

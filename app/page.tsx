@@ -1,17 +1,143 @@
 "use client"
 
 export const dynamic = "force-dynamic"
-
+import { FaqSection, FAQ_ITEMS } from "@/components/web3/FaqSection"
 import { useState } from "react"
 import { Toaster } from "sonner"
-import { X, FileText, Shield, Wallet } from "lucide-react"
+import { X, FileText, Shield, Wallet, Sparkles } from "lucide-react"
 import { NetworkBanner } from "@/components/web3/NetworkBanner"
 import { ContractCard } from "@/components/web3/ContractCard"
 import { WalletStatsSidebar } from "@/components/web3/WalletStatsSidebar"
-import { ConnectWalletButton } from "@/components/web3/ConnectWalletButton"
 import { CONTRACTS } from "@/components/web3/contracts"
 import { useDeploymentStats } from "@/hooks/useDeploymentStats"
 import { useWallet } from "@/hooks/useWallet"
+
+/* ── About Modal ─────────────────────────────────────────────────── */
+function AboutModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-[200] grid place-items-center bg-black/70 p-4 backdrop-blur-md"
+      onClick={onClose}
+    >
+      <div
+        className="glass-strong relative flex flex-col overflow-hidden shadow-[0_24px_80px_rgba(0,0,0,0.7)]"
+        style={{ width: "min(520px, 92vw)", height: "min(520px, 88vh)", borderRadius: 20 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="absolute left-0 right-0 top-0 h-0.5" style={{ background: "linear-gradient(90deg,#7c5af5,#38bdf8)", borderRadius: "20px 20px 0 0" }} />
+        <div className="flex items-center justify-between border-b border-white/[0.08] px-6 py-4">
+          <div className="flex items-center gap-2.5">
+            <div className="grid h-8 w-8 place-items-center rounded-[8px]" style={{ background: "linear-gradient(135deg,#7c5af5,#38bdf8)" }}>
+              <Sparkles className="h-4 w-4 text-white" strokeWidth={2} />
+            </div>
+            <span className="text-[15px] font-bold tracking-tight text-[var(--ink)]">About OnChainDeploy</span>
+          </div>
+          <button onClick={onClose} className="grid h-7 w-7 place-items-center rounded-full border border-white/[0.08] bg-white/[0.05] text-[var(--ink-3)] transition-colors hover:bg-white/[0.10] hover:text-[var(--ink)]">
+            <X className="h-3.5 w-3.5" strokeWidth={2.5} />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-6 py-5 text-[12.5px] leading-relaxed text-[var(--ink-2)] space-y-5">
+          <p className="text-[11px] uppercase tracking-widest text-[var(--ink-3)] font-semibold">
+            Built on Base · June 2026
+          </p>
+
+          <section>
+            <h3 className="mb-1.5 text-[13px] font-bold text-[var(--ink)]">What is OnChainDeploy?</h3>
+            <p>
+              <span className="font-semibold text-[var(--ink)]">OnChainDeploy</span> is a no-code
+              smart contract deployment platform built on Base Mainnet, an Ethereum Layer 2 network
+              created by Coinbase. It allows anyone — regardless of technical background — to deploy
+              and verify smart contracts directly from their browser in a single click.
+            </p>
+          </section>
+
+          <section>
+            <h3 className="mb-1.5 text-[13px] font-bold text-[var(--ink)]">Why We Built It</h3>
+            <p>
+              Traditional smart contract deployment requires knowledge of Solidity, familiarity with
+              developer tools like Remix or Hardhat, and an understanding of compiler settings.
+              OnChainDeploy removes all of this complexity. Users select from a library of
+              pre-tested contract templates, connect a Web3 wallet, and deploy instantly.
+            </p>
+          </section>
+
+          <section>
+            <h3 className="mb-1.5 text-[13px] font-bold text-[var(--ink)]">How It Works</h3>
+            <ul className="space-y-2 pl-1">
+              {[
+                { num: "1", text: "Connect MetaMask or Rabby — no signup needed" },
+                { num: "2", text: "Pick a contract template from the library" },
+                { num: "3", text: "Click Deploy — confirm in your wallet" },
+                { num: "4", text: "Your contract is live on Base instantly" },
+                { num: "5", text: "Optionally verify source code on BaseScan for $0.09" },
+              ].map((s) => (
+                <li key={s.num} className="flex items-start gap-2.5">
+                  <span
+                    className="mt-0.5 grid h-5 w-5 flex-shrink-0 place-items-center rounded-full text-[10px] font-extrabold text-white"
+                    style={{ background: "linear-gradient(135deg,#7c5af5,#38bdf8)" }}
+                  >
+                    {s.num}
+                  </span>
+                  <span>{s.text}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section>
+            <h3 className="mb-1.5 text-[13px] font-bold text-[var(--ink)]">Our Principles</h3>
+            <p>
+              OnChainDeploy is fully non-custodial — we never hold your funds, private keys, or
+              control your contracts. Every deployment goes directly from your wallet to the
+              blockchain. We believe deploying on-chain should be as easy as posting on social media.
+            </p>
+          </section>
+
+          {/* Quick facts */}
+          <section>
+            <h3 className="mb-2 text-[13px] font-bold text-[var(--ink)]">Quick Facts</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { label: "Network", value: "Base Mainnet" },
+                { label: "Chain ID", value: "8453" },
+                { label: "Deploy Cost", value: "Free + gas" },
+                { label: "Verify Cost", value: "$0.09" },
+                { label: "Wallets", value: "MetaMask, Rabby" },
+                { label: "Templates", value: "9 and growing" },
+              ].map((f) => (
+                <div
+                  key={f.label}
+                  className="rounded-[8px] border border-white/[0.07] bg-white/[0.03] px-3 py-2"
+                >
+                  <div className="text-[10px] uppercase tracking-wider text-[var(--ink-3)]">{f.label}</div>
+                  <div className="mt-0.5 text-[13px] font-bold text-[var(--ink)]">{f.value}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section>
+            <h3 className="mb-1.5 text-[13px] font-bold text-[var(--ink)]">Independent Project</h3>
+            <p>
+              OnChainDeploy is built by an independent team passionate about making Web3 accessible
+              to everyone. We are not affiliated with Coinbase, Base protocol, or Anthropic.
+            </p>
+          </section>
+        </div>
+
+        <div className="border-t border-white/[0.08] px-6 py-3.5">
+          <button
+            onClick={onClose}
+            className="w-full rounded-[10px] gradient-bg py-2 text-[13px] font-semibold text-white shadow-[0_4px_14px_rgba(124,90,245,0.35)] transition-all hover:shadow-[0_6px_20px_rgba(124,90,245,0.50)]"
+          >
+            Got It
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 /* ── Privacy Modal ───────────────────────────────────────────────── */
 function PrivacyModal({ onClose }: { onClose: () => void }) {
@@ -127,6 +253,7 @@ export default function HomePage() {
     useDeploymentStats(address ?? undefined)
   const [showTerms, setShowTerms] = useState(false)
   const [showPrivacy, setShowPrivacy] = useState(false)
+  const [showAbout, setShowAbout] = useState(false)
 
   const regularContracts = CONTRACTS.filter((c) => !c.comingSoon)
   const comingSoonContract = CONTRACTS.find((c) => c.comingSoon)
@@ -134,29 +261,21 @@ export default function HomePage() {
   return (
     <main className="relative min-h-screen overflow-x-hidden bg-[var(--bg-2)] text-[var(--ink)]">
 
-      {/* ── Rich background system ─────────────────────────────────── */}
+      {/* ── Rich background ────────────────────────────────────────── */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-        {/* Deep base gradient */}
         <div className="bg-base" />
-        {/* Grid lines */}
         <div className="bg-grid" />
-        {/* Purple dot accents at top */}
         <div className="bg-dots" />
-        {/* Animated color orbs */}
         <div className="bg-orb bg-orb-1" />
         <div className="bg-orb bg-orb-2" />
         <div className="bg-orb bg-orb-3" />
-        {/* Noise texture for depth */}
         <div className="bg-noise" />
-        {/* Top glowing line */}
         <div className="bg-top-glow" />
       </div>
 
       {/* ── Header ─────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-50 border-b border-white/[0.07] bg-[rgba(10,10,20,0.75)] backdrop-blur-xl backdrop-saturate-150">
         <div className="mx-auto flex max-w-[1280px] items-center justify-between gap-4 px-6 py-3">
-
-          {/* Logo */}
           <div className="flex items-center gap-3">
             <div
               className="gradient-bg grid h-9 w-9 flex-shrink-0 place-items-center rounded-[10px]"
@@ -172,16 +291,11 @@ export default function HomePage() {
               <div className="text-[11px] text-[var(--ink-3)]">One-click contracts on Base</div>
             </div>
           </div>
-
-          {/* Header right — nav badges + connect wallet */}
           <div className="flex items-center gap-3">
-            {/* Built on Base badge */}
             <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-sky-400/20 bg-sky-400/[0.07] px-3 py-1.5 text-[11px] font-semibold text-sky-300">
               <span className="h-1.5 w-1.5 rounded-full bg-sky-400 animate-pulse" />
               Base Mainnet
             </span>
-
-            {/* Connect Wallet in header */}
             <div className="header-wallet-btn">
               {isConnected ? (
                 <button
@@ -216,7 +330,6 @@ export default function HomePage() {
 
             {/* Hero */}
             <div className="mb-10">
-              {/* Trust badge */}
               <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-purple-400/25 bg-purple-400/[0.08] px-4 py-1.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-purple-400 animate-pulse" />
                 <span className="text-[12px] font-semibold text-purple-300">
@@ -233,7 +346,7 @@ export default function HomePage() {
                 No code. No Remix. No confusion. Pick a template, connect your wallet, and your smart contract is live on Base.
               </p>
 
-              {/* Trust signals row */}
+              {/* Trust signals */}
               <div className="flex flex-wrap items-center gap-3">
                 <div className="flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-3.5 py-1.5">
                   <span className="text-emerald-400 text-[13px]">✓</span>
@@ -280,9 +393,33 @@ export default function HomePage() {
           {/* RIGHT — sidebar */}
           <WalletStatsSidebar deployed={deployed} verified={verified} />
         </div>
+
+        {/* FAQ — full width below the grid */}
+        <div className="mx-auto mt-6 max-w-[900px]">
+          <FaqSection />
+        </div>
       </div>
 
-      {/* ── Footer ─────────────────────────────────────────────────── */}
+      {/* FAQ structured data for Google + AI engines */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: FAQ_ITEMS.map((item) => ({
+              "@type": "Question",
+              name: item.q,
+              acceptedAnswer: {
+                "@type": "Answer",
+                text: item.a,
+              },
+            })),
+          }),
+        }}
+      />
+
+      {/* Footer */}
       <footer className="relative z-10 mx-auto mt-4 flex max-w-[1280px] flex-wrap items-center justify-between gap-3 border-t border-white/[0.07] px-4 py-5 text-[12.5px] text-[var(--ink-3)] sm:px-6">
         <div className="flex items-center gap-3">
           <span>© 2026 OnChainDeploy</span>
@@ -292,12 +429,14 @@ export default function HomePage() {
           </span>
         </div>
         <div className="flex gap-4">
+          <button onClick={() => setShowAbout(true)} className="hover:text-[var(--ink-2)] transition-colors">About</button>
           <button onClick={() => setShowPrivacy(true)} className="hover:text-[var(--ink-2)] transition-colors">Privacy</button>
           <button onClick={() => setShowTerms(true)} className="hover:text-[var(--ink-2)] transition-colors">Terms</button>
         </div>
       </footer>
 
       {/* Modals */}
+      {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
       {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
       {showTerms && <TermsModal onClose={() => setShowTerms(false)} />}
 

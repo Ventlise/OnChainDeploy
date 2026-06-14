@@ -347,7 +347,7 @@ export function ContractCard({
           className="absolute left-0 right-0 top-0 h-0.5"
           style={{ background: "linear-gradient(90deg,#7c5af5,#38bdf8)", borderRadius: "16px 16px 0 0" }}
         />
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
             <div
               className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-[10px]"
