@@ -11,6 +11,9 @@ const SITE_URL = 'https://on-chain-deploy.vercel.app'
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: 'OnChainDeploy — Deploy Smart Contracts on Base in One Click',
+  verification: {
+    google: 'b2daa8e4c512ed26',
+  },
   description:
     'Deploy and verify smart contracts on Base Mainnet with one click. No code, no Remix, no confusion. Pick a template, connect your wallet, and ship your contract in seconds — BaseScan verified.',
   keywords: [
