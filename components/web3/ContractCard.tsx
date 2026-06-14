@@ -331,8 +331,17 @@ export function ContractCard({
   if (comingSoon) {
     return (
       <div
-  className="glass relative overflow-hidden p-4 opacity-80"
-        style={{ borderRadius: 16 }}
+        className="glass group relative flex flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1"
+        style={{
+          borderRadius: 16,
+          transition: "transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.boxShadow = `0 0 0 1px ${glow.replace("0.45", "0.7")}, 0 8px 32px ${glow.replace("0.45", "0.35")}`
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.boxShadow = ""
+        }}
       >
         <div
           className="absolute left-0 right-0 top-0 h-0.5"
@@ -402,9 +411,19 @@ export function ContractCard({
           >
             <Icon className="h-4 w-4 text-white" strokeWidth={2} />
           </div>
-          <h3 className="mb-1 text-[14px] font-bold leading-snug tracking-tight text-[var(--ink)]">
-            {title}
-          </h3>
+          <div className="mb-1 flex flex-wrap items-center gap-2">
+            <h3 className="text-[14px] font-bold leading-snug tracking-tight text-[var(--ink)]">
+              {title}
+            </h3>
+            {id === "gm-beacon" && (
+              <span
+                className="badge-premium inline-flex items-center gap-1 rounded-full border border-yellow-400/50 bg-yellow-400/10 px-2 py-0.5 font-mono text-[9px] font-extrabold uppercase tracking-[0.08em] text-yellow-300"
+              >
+                <span className="text-[8px]">⚡</span>
+                Free · Limited Time
+              </span>
+            )}
+          </div>
           <p className="mb-3 flex-1 text-[12px] leading-relaxed text-[var(--ink-2)]">
             {description}
           </p>
@@ -433,9 +452,15 @@ export function ContractCard({
               <ShieldCheck className="h-3 w-3 shrink-0" strokeWidth={2} />
               <span className="hidden sm:inline">Deploy &amp; Verify</span>
               <span className="sm:hidden">+ Verify</span>
-              <span className="text-[10px] font-medium opacity-75">
-                {verifyFee > 0 ? `$${verifyFee.toFixed(2)}` : "Free"}
-              </span>
+              {id === "gm-beacon" ? (
+                <span className="rounded-full bg-yellow-400/25 px-1.5 py-0.5 text-[9px] font-extrabold text-yellow-300">
+                  FREE ⚡
+                </span>
+              ) : (
+                <span className="text-[10px] font-medium opacity-75">
+                  {verifyFee > 0 ? `$${verifyFee.toFixed(2)}` : "Free"}
+                </span>
+              )}
             </button>
           </div>
         </div>
