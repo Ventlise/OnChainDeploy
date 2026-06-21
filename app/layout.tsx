@@ -14,6 +14,9 @@ export const metadata: Metadata = {
   verification: {
     google: 'b2daa8e4c512ed26',
   },
+  other: {
+    'base:app_id': '6a381017dd61b5c5a55b4ad2',
+  },
   description:
     'Deploy and verify smart contracts on Base Mainnet with one click. No code, no Remix, no confusion. Pick a template, connect your wallet, and ship your contract in seconds — BaseScan verified.',
   keywords: [
