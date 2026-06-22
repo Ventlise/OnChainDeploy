@@ -6,7 +6,7 @@ import { Providers } from './providers'
 
 const inter = Inter({ subsets: ['latin'] })
 
-const SITE_URL = 'https://on-chain-deploy.vercel.app'
+const SITE_URL = 'https://onchaindeploy.co'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

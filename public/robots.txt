@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://on-chain-deploy.vercel.app/sitemap.xml
+Sitemap: https://onchaindeploy.co/sitemap.xml
