@@ -8,6 +8,7 @@ import { X, FileText, Shield, Wallet, Sparkles } from "lucide-react"
 import { NetworkBanner } from "@/components/web3/NetworkBanner"
 import { ContractCard } from "@/components/web3/ContractCard"
 import { WalletStatsSidebar } from "@/components/web3/WalletStatsSidebar"
+import { ReferralCard } from "@/components/web3/ReferralCard"
 import { CONTRACTS } from "@/components/web3/contracts"
 import { useDeploymentStats } from "@/hooks/useDeploymentStats"
 import { useWallet } from "@/hooks/useWallet"
@@ -391,7 +392,10 @@ export default function HomePage() {
           </section>
 
           {/* RIGHT — sidebar */}
-          <WalletStatsSidebar deployed={deployed} verified={verified} />
+          <div className="flex flex-col gap-3">
+            <WalletStatsSidebar deployed={deployed} verified={verified} />
+            <ReferralCard />
+          </div>
         </div>
 
         {/* FAQ — full width below the grid */}
