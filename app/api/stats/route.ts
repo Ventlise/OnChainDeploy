@@ -1,29 +1,47 @@
 // app/api/stats/route.ts
+// Global deploy counter using Redis directly (works with redis:// URLs)
+
 import { NextResponse } from "next/server"
-import { createClient } from "@vercel/kv"
+import Redis from "ioredis"
 
 const BASELINE = 123
 const KV_KEY = "global_deploy_count"
 
-// Create KV client using YOUR variable name (KV_REDIS_URL)
-function getKV() {
+// Singleton Redis client (reused across requests)
+let client: Redis | null = null
+
+function getRedis(): Redis | null {
+  if (client) return client
+  
   const url = process.env.KV_REDIS_URL
-  const token = process.env.KV_REDIS_TOKEN ?? process.env.KV_REST_API_TOKEN ?? ""
+  if (!url) {
+    console.warn("[api/stats] KV_REDIS_URL is not set")
+    return null
+  }
   
-  if (!url) return null
-  
-  return createClient({ url, token })
+  try {
+    client = new Redis(url, {
+      maxRetriesPerRequest: 2,
+      connectTimeout: 5000,
+      lazyConnect: false,
+    })
+    return client
+  } catch (err) {
+    console.error("[api/stats] Redis connection failed:", err)
+    return null
+  }
 }
 
-// GET — return current global total
 export async function GET() {
   try {
-    const kv = getKV()
-    if (!kv) {
+    const redis = getRedis()
+    if (!redis) {
       return NextResponse.json({ total: BASELINE })
     }
-    const raw = await kv.get<number>(KV_KEY)
-    const realDeploys = typeof raw === "number" ? raw : 0
+    
+    const raw = await redis.get(KV_KEY)
+    const realDeploys = raw ? parseInt(raw, 10) : 0
+    
     return NextResponse.json(
       { total: BASELINE + realDeploys },
       { headers: { "Cache-Control": "no-store" } }
@@ -34,14 +52,14 @@ export async function GET() {
   }
 }
 
-// POST — bump count by 1 after every real deploy
 export async function POST() {
   try {
-    const kv = getKV()
-    if (!kv) {
+    const redis = getRedis()
+    if (!redis) {
       return NextResponse.json({ total: BASELINE })
     }
-    const newCount = await kv.incr(KV_KEY)
+    
+    const newCount = await redis.incr(KV_KEY)
     return NextResponse.json({ total: BASELINE + newCount })
   } catch (err) {
     console.error("[api/stats] POST error:", err)
