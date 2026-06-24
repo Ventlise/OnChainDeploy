@@ -37,6 +37,15 @@ const nextConfig = {
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 60,
   },
+  // ── Bundle optimization (loads only what you use) ────────────
+  experimental: {
+    optimizePackageImports: [
+      "@rainbow-me/rainbowkit",
+      "wagmi",
+      "viem",
+      "lucide-react",
+    ],
+  },
 
   // ── Webpack fixes for Web3 packages ──────────────────────────
   webpack: (config) => {

@@ -1,3 +1,4 @@
+// components/web3/ContractCard.tsx
 "use client"
 
 import { useState } from "react"
@@ -12,6 +13,9 @@ import type { DeployMode } from "./FeeBreakdown"
 import { deployContract } from "@/services/deploy"
 import { useWallet } from "@/hooks/useWallet"
 import { useNetwork } from "@/hooks/useNetwork"
+// ── ADDITION 1 of 2: import the global counter hook ──────────────
+import { useGlobalStats } from "@/hooks/useGlobalStats"
+// ─────────────────────────────────────────────────────────────────
 import {
   SIMPLE_STORAGE_BYTECODE,
   SIMPLE_STORAGE_GAS_LIMIT,
@@ -211,6 +215,9 @@ export function ContractCard({
 }: ContractCardProps) {
   const { address, isConnected } = useWallet()
   const { isCorrectNetwork } = useNetwork()
+  // ── ADDITION 2 of 2: get the increment function ───────────────
+  const { incrementGlobal } = useGlobalStats()
+  // ─────────────────────────────────────────────────────────────
 
   const deployFee = CONTRACT_REGISTRY[id]?.deployFeeUsd ?? DEPLOY_FEE_USD
   const verifyFee = CONTRACT_REGISTRY[id]?.verifyFeeUsd ?? VERIFY_FEE_USD
@@ -317,6 +324,10 @@ export function ContractCard({
       if (mode === "deploy-verify") onDeployVerify?.()
       else onDeploy?.()
 
+      // ── Bump the global counter — fires after every successful deploy ──
+      incrementGlobal()
+      // ──────────────────────────────────────────────────────────────────
+
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Something went wrong."
       setError(message)
@@ -332,10 +343,7 @@ export function ContractCard({
     return (
       <div
         className="glass group relative flex flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1"
-        style={{
-          borderRadius: 16,
-          transition: "transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease",
-        }}
+        style={{ borderRadius: 16 }}
         onMouseEnter={(e) => {
           e.currentTarget.style.boxShadow = `0 0 0 1px ${glow.replace("0.45", "0.7")}, 0 8px 32px ${glow.replace("0.45", "0.35")}`
         }}
@@ -416,9 +424,7 @@ export function ContractCard({
               {title}
             </h3>
             {id === "gm-beacon" && (
-              <span
-                className="badge-premium inline-flex items-center gap-1 rounded-full border border-yellow-400/50 bg-yellow-400/10 px-2 py-0.5 font-mono text-[9px] font-extrabold uppercase tracking-[0.08em] text-yellow-300"
-              >
+              <span className="badge-premium inline-flex items-center gap-1 rounded-full border border-yellow-400/50 bg-yellow-400/10 px-2 py-0.5 font-mono text-[9px] font-extrabold uppercase tracking-[0.08em] text-yellow-300">
                 <span className="text-[8px]">⚡</span>
                 Free · Limited Time
               </span>
@@ -466,7 +472,6 @@ export function ContractCard({
         </div>
       </div>
 
-      {/* Step 1 — Name prompt */}
       <NamePromptModal
         isOpen={showNamePrompt}
         contractId={id}
@@ -478,7 +483,6 @@ export function ContractCard({
         onClose={() => setShowNamePrompt(false)}
       />
 
-      {/* Step 2 — Deploy modal */}
       <DeploymentModal
         isOpen={isDeployModalOpen}
         contractId={id}

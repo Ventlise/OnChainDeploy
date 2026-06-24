@@ -1,11 +1,12 @@
+// components/web3/WalletStatsSidebar.tsx
 "use client"
 
 import { useEffect, useState } from "react"
-import { Fuel, Wifi, Box, Bitcoin } from "lucide-react"
-import { ConnectWalletButton } from "./ConnectWalletButton"
+import { Fuel, Wifi, Box, Bitcoin, Rocket } from "lucide-react"
 import { useWallet } from "@/hooks/useWallet"
 import { useNetwork } from "@/hooks/useNetwork"
 import { useGasPrice } from "@/hooks/useGasPrice"
+import { useGlobalStats } from "@/hooks/useGlobalStats"
 
 export function WalletStatsSidebar({
   deployed,
@@ -14,17 +15,17 @@ export function WalletStatsSidebar({
   deployed: number
   verified: number
 }) {
-  const { address, isConnected, isConnecting, connect, disconnect } = useWallet()
+  const { address, isConnected } = useWallet()
   const { isCorrectNetwork } = useNetwork()
-  const { isLoading, gasPriceFormatted, ethPriceFormatted, refresh } = useGasPrice()
+  const { isLoading: gasLoading, gasPriceFormatted, ethPriceFormatted, refresh } = useGasPrice()
+  const { total: globalTotal, isLoading: globalLoading } = useGlobalStats()
+
   const [block, setBlock] = useState(24891342)
   const [balance, setBalance] = useState(0)
 
   // Block number ticker — visual only
   useEffect(() => {
-    const t = setInterval(() => {
-      setBlock((b) => b + 1)
-    }, 2200)
+    const t = setInterval(() => setBlock((b) => b + 1), 2200)
     return () => clearInterval(t)
   }, [])
 
@@ -40,8 +41,7 @@ export function WalletStatsSidebar({
           params: [address, "latest"],
         })
         const wei = BigInt(hex)
-        const ethVal = Number(wei) / 1e18
-        setBalance(ethVal)
+        setBalance(Number(wei) / 1e18)
       } catch { setBalance(0) }
     }
     fetchBalance()
@@ -53,8 +53,9 @@ export function WalletStatsSidebar({
   return (
     <aside className="sticky top-[72px] flex flex-col gap-3">
 
-      {/* ── WALLET CARD ── */}
+      {/* ── GLOBAL STATS CARD (replaces the old duplicate wallet card) ── */}
       <div className="glass relative overflow-hidden p-4">
+        {/* Gradient border glow — same as original wallet card */}
         <div
           className="pointer-events-none absolute inset-0 rounded-2xl p-[1.5px] opacity-70"
           style={{
@@ -69,34 +70,44 @@ export function WalletStatsSidebar({
           style={{ background: "var(--grad)" }}
         />
 
-        {/* Network badge */}
+        {/* Live badge */}
         <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-emerald-300">
           <span className="pulse-green inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
-          {isConnected && isCorrectNetwork ? "Base Mainnet ✓" : "Base Mainnet"}
+          Live · Base Mainnet
         </span>
 
-        <div className="mt-2.5 mb-3">
-          <h3 className="text-[15px] font-bold leading-snug text-[var(--ink)]">
-            {isConnected ? "Wallet connected" : "Connect your wallet"}
-          </h3>
-          <p className="mt-0.5 text-[12px] leading-relaxed text-[var(--ink-2)]">
-            {isConnected
-              ? "Ready to deploy on Base. Gas paid in ETH."
-              : "Connect to deploy contracts in one click."}
-          </p>
+        {/* Icon + label row */}
+        <div className="mt-3 flex items-center gap-2.5">
+          <div
+            className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-[10px]"
+            style={{
+              background: "var(--grad)",
+              boxShadow: "0 4px 14px rgba(124,90,245,0.4)",
+            }}
+          >
+            <Rocket className="h-4 w-4 text-white" strokeWidth={2.2} />
+          </div>
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">
+            Global Contracts Deployed
+          </div>
         </div>
 
-        <ConnectWalletButton
-          isConnected={isConnected}
-          isConnecting={isConnecting}
-          address={address ?? ""}
-          balance={balance}
-          onConnect={connect}
-          onDisconnect={disconnect}
-        />
+        {/* The big live number */}
+        <div className="mt-3">
+          <div className="gradient-text text-[40px] font-extrabold leading-none tracking-tight tabular-nums">
+            {globalLoading
+              ? "—"
+              : globalTotal !== null
+              ? globalTotal.toLocaleString()
+              : "123"}
+          </div>
+          <p className="mt-2 text-[11.5px] leading-relaxed text-[var(--ink-2)]">
+            Smart contracts shipped on Base through OnChainDeploy — by builders worldwide.
+          </p>
+        </div>
       </div>
 
-      {/* ── STATS CARD ── */}
+      {/* ── YOUR STATS CARD (unchanged) ── */}
       <div className="glass p-4">
         <div className="mb-3 flex items-center justify-between">
           <span className="font-mono text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--ink-3)]">
@@ -142,7 +153,7 @@ export function WalletStatsSidebar({
         </div>
       </div>
 
-      {/* ── NETWORK FEED CARD ── */}
+      {/* ── NETWORK FEED CARD (unchanged) ── */}
       <div className="glass p-4">
         <div className="mb-3 flex items-center justify-between">
           <span className="font-mono text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--ink-3)]">
@@ -160,12 +171,12 @@ export function WalletStatsSidebar({
           <FeedRow
             icon={<Fuel className="h-3.5 w-3.5" />}
             label="Gas price"
-            value={isLoading ? "…" : gasPriceFormatted}
+            value={gasLoading ? "…" : gasPriceFormatted}
           />
           <FeedRow
             icon={<Bitcoin className="h-3.5 w-3.5" />}
             label="ETH price"
-            value={isLoading ? "…" : ethPriceFormatted}
+            value={gasLoading ? "…" : ethPriceFormatted}
           />
           <FeedRow
             icon={<Wifi className="h-3.5 w-3.5" />}

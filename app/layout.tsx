@@ -5,7 +5,11 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ 
+  subsets: ['latin'],
+  display: 'swap',
+  preload: true,
+})
 
 const SITE_URL = 'https://onchaindeploy.co'
 
@@ -97,6 +101,8 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://mainnet.base.org" crossOrigin="anonymous" />
         {/* JSON-LD structured data for Google rich results */}
         <script
           type="application/ld+json"
