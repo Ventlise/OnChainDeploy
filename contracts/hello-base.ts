@@ -102,4 +102,4 @@ export const HELLO_BASE_COMPILER = {
 }
 
 export const HELLO_BASE_DEPLOY_FEE_USD = 0
-export const HELLO_BASE_VERIFY_FEE_USD = 0.09
+export const HELLO_BASE_VERIFY_FEE_USD = 0

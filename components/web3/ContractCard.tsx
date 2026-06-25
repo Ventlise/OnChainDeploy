@@ -458,13 +458,13 @@ export function ContractCard({
               <ShieldCheck className="h-3 w-3 shrink-0" strokeWidth={2} />
               <span className="hidden sm:inline">Deploy &amp; Verify</span>
               <span className="sm:hidden">+ Verify</span>
-              {id === "gm-beacon" ? (
+              {verifyFee === 0 ? (
                 <span className="rounded-full bg-yellow-400/25 px-1.5 py-0.5 text-[9px] font-extrabold text-yellow-300">
                   FREE ⚡
                 </span>
               ) : (
                 <span className="text-[10px] font-medium opacity-75">
-                  {verifyFee > 0 ? `$${verifyFee.toFixed(2)}` : "Free"}
+                  ${verifyFee.toFixed(2)}
                 </span>
               )}
             </button>

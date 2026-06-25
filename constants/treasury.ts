@@ -10,7 +10,7 @@ export const TREASURY_ADDRESS = TREASURY_WALLET
 // Deploy-only is always free across all contracts.
 // Deploy & Verify is $0.09 — except GM Beacon which is fully free (see below).
 export const DEPLOY_FEE_USD = 0
-export const VERIFY_FEE_USD = 0.09
+export const VERIFY_FEE_USD = 0
 
 // Aliases used by FeeBreakdown and DeploymentModal
 export const TREASURY_FEE_DEPLOY_USD = DEPLOY_FEE_USD
@@ -39,13 +39,13 @@ export const GM_BEACON_VERIFY_FEE_USD = 0
 // All contracts follow the global defaults above.
 // These are here for explicitness — override per-contract if ever needed.
 export const SIMPLE_STORAGE_DEPLOY_FEE_USD = 0
-export const SIMPLE_STORAGE_VERIFY_FEE_USD = 0.09
+export const SIMPLE_STORAGE_VERIFY_FEE_USD = 0
 
 export const HELLO_BASE_DEPLOY_FEE_USD = 0
-export const HELLO_BASE_VERIFY_FEE_USD = 0.09
+export const HELLO_BASE_VERIFY_FEE_USD = 0
 
 export const COUNTER_DEPLOY_FEE_USD = 0
-export const COUNTER_VERIFY_FEE_USD = 0.09
+export const COUNTER_VERIFY_FEE_USD = 0
 
 export const VOTING_DEPLOY_FEE_USD = 0
-export const VOTING_VERIFY_FEE_USD = 0.09
+export const VOTING_VERIFY_FEE_USD = 0

@@ -120,4 +120,4 @@ export const MOOD_TRACKER_COMPILER = {
 }
 
 export const MOOD_TRACKER_DEPLOY_FEE_USD = 0
-export const MOOD_TRACKER_VERIFY_FEE_USD = 0.09
+export const MOOD_TRACKER_VERIFY_FEE_USD = 0

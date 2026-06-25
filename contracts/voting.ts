@@ -177,4 +177,4 @@ export const VOTING_COMPILER = {
 }
 
 export const VOTING_DEPLOY_FEE_USD = 0
-export const VOTING_VERIFY_FEE_USD = 0.09
+export const VOTING_VERIFY_FEE_USD = 0

@@ -123,4 +123,4 @@ export const COUNTER_COMPILER = {
 }
 
 export const COUNTER_DEPLOY_FEE_USD = 0
-export const COUNTER_VERIFY_FEE_USD = 0.09
+export const COUNTER_VERIFY_FEE_USD = 0

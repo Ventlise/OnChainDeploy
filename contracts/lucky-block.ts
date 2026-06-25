@@ -189,4 +189,4 @@ export const LUCKY_BLOCK_COMPILER = {
 }
 
 export const LUCKY_BLOCK_DEPLOY_FEE_USD = 0
-export const LUCKY_BLOCK_VERIFY_FEE_USD = 0.09
+export const LUCKY_BLOCK_VERIFY_FEE_USD = 0

@@ -131,4 +131,4 @@ export const CHAIN_NOTES_COMPILER = {
 }
 
 export const CHAIN_NOTES_DEPLOY_FEE_USD = 0
-export const CHAIN_NOTES_VERIFY_FEE_USD = 0.09
+export const CHAIN_NOTES_VERIFY_FEE_USD = 0
