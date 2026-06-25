@@ -94,7 +94,10 @@ export function WalletStatsSidebar({
 
         {/* The big live number */}
         <div className="mt-3">
-          <div className="gradient-text text-[40px] font-extrabold leading-none tracking-tight tabular-nums">
+          <div 
+           key={globalTotal ?? 0}
+           className="gradient-text text-[40px] font-extrabold leading-none tracking-tight            tabular-nums animate-in fade-in zoom-in-95 duration-500"
+        >
             {globalLoading
               ? "—"
               : globalTotal !== null
